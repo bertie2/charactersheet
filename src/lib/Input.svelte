@@ -29,16 +29,16 @@
     }
 
     textarea {
-        /* background-color: #ffffff00;
-        border: none; */
+        background-color: #ffffff00;
+        border: none;
         padding: 0%;
         margin: 0%;
         resize: none;
     }
 
     input {
-        /* background-color: #ffffff00;
-        border: none; */
+        background-color: #ffffff00;
+        border: none;
         padding: 0%;
         margin: 0%;
     }

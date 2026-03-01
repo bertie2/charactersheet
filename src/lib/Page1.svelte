@@ -2,11 +2,12 @@
 	import Input from "./Input.svelte";
     import { persisted } from "svelte-persisted-store";
     import { createEmptyCharacterSheet, createEmptyWeaponCantrip } from "./types";
+    import { ismobile } from "$lib/utils";
 
     export let characterSheet = persisted("characterSheet", createEmptyCharacterSheet());
 
 </script>
-<div style="height: 100vh; width: 78vh; position: relative; container-type: size;">
+<div style="{$ismobile ? 'height: 128vw; width: 100vw;' : 'height: 100vh; width: 78vh;'} position: relative; container-type: size;">
     <img src="/page1.png" alt="Page 1" style="height: 100%; width: 100%;" />
     <!-- Char Summary -->
     <Input bind:value={$characterSheet.name} width={270} height={18} x={40} y={20} />
@@ -147,11 +148,11 @@
         <Input bind:value={$characterSheet.weaponsAndCantrips[index].notes} width={155} height={18} x={599} y={255 + (index) * 25} fontSize={10} />
     {/each}
     <button style=" position: absolute; top: {25.5 + (2.495 * $characterSheet.weaponsAndCantrips.length)}cqh; left: 30cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 9cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips, createEmptyWeaponCantrip()]}>
+                    width: 10cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips, createEmptyWeaponCantrip()]}>
         Add Weapon
     </button>
-    <button style=" position: absolute; top: {25.5 + (2.495 * $characterSheet.weaponsAndCantrips.length)}cqh; left: 40cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 10cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips.slice(0, -1)]}>
+    <button style=" position: absolute; top: {25.5 + (2.495 * $characterSheet.weaponsAndCantrips.length)}cqh; left: 41cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
+                    width: 11cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips.slice(0, -1)]}>
         Remove Weapon
     </button>
     

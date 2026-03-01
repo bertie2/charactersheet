@@ -2,11 +2,11 @@
     import Input from "./Input.svelte";
     import { persisted } from "svelte-persisted-store";
     import { createEmptyCharacterSheet, createEmptySpell, createEmptyMagicItemAttunment } from "./types";
-
+    import { ismobile } from "$lib/utils";
     export let characterSheet = persisted("characterSheet", createEmptyCharacterSheet());
 </script>
 
-<div style="height: 100vh; width: 78vh; position: relative; container-type: size;">
+<div style="{$ismobile ? 'height: 128vw; width: 100vw;' : 'height: 100vh; width: 78vh;'} position: relative; container-type: size;">
     <img src="/page2.png" alt="Page 2" style="height: 100%; width: 100%;" />
 
     <!-- spellcasting -->
@@ -34,11 +34,11 @@
         <Input bind:value={$characterSheet.spells[index].notes} width={110} height={20} x={394} y={228 + index * 25.1}/>
     {/each}
     <button style=" position: absolute; top: {23 + (2.495 * $characterSheet.spells.length)}cqh; left: 6cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 6cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.spells = [...$characterSheet.spells, createEmptySpell()]}>
+                    width: 7cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.spells = [...$characterSheet.spells, createEmptySpell()]}>
         Add Spell
     </button>
-    <button style=" position: absolute; top: {23 + (2.495 * $characterSheet.spells.length)}cqh; left: 13cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 8cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.spells = [...$characterSheet.spells.slice(0, -1)]}>
+    <button style=" position: absolute; top: {23 + (2.495 * $characterSheet.spells.length)}cqh; left: 14cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
+                    width: 9cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.spells = [...$characterSheet.spells.slice(0, -1)]}>
         Remove Spell
     </button>
 
@@ -48,11 +48,11 @@
         <Input bind:value={$characterSheet.magicItems[index].name} width={195} height={18} x={560} y={770 + index * 25.1}/>
     {/each}
     <button style=" position: absolute; top: {77 + (2.495 * $characterSheet.magicItems.length)}cqh; left: 56cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 6cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.magicItems = [...$characterSheet.magicItems, createEmptyMagicItemAttunment()]}>
+                    width: 7cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.magicItems = [...$characterSheet.magicItems, createEmptyMagicItemAttunment()]}>
         Add Item
     </button>
-    <button style=" position: absolute; top: {77 + (2.495 * $characterSheet.magicItems.length)}cqh; left: 63cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
-                    width: 8cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.magicItems = [...$characterSheet.magicItems.slice(0, -1)]}>
+    <button style=" position: absolute; top: {77 + (2.495 * $characterSheet.magicItems.length)}cqh; left: 64cqh; background-color: #ccc; border: none; padding: 5px 10px; cursor: pointer;
+                    width: 9cqh; height: 1.6cqh; font-size: 1cqh; line-height: 1cqh;" on:click={() => $characterSheet.magicItems = [...$characterSheet.magicItems.slice(0, -1)]}>
         Remove Item
     </button>
     
