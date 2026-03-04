@@ -1,10 +1,10 @@
 <script lang="ts">
 	import Input from "./Input.svelte";
-    import { persisted } from "svelte-persisted-store";
-    import { createEmptyCharacterSheet, createEmptyWeaponCantrip } from "./types";
+    import { createEmptyWeaponCantrip, type CharacterSheet } from "./types";
     import { ismobile } from "$lib/utils";
+	import type { Writable } from "svelte/store";
 
-    export let characterSheet = persisted("characterSheet", createEmptyCharacterSheet());
+    export let characterSheet: Writable<CharacterSheet>;
 
 </script>
 <div style="{$ismobile ? 'height: 128vw; width: 100vw;' : 'height: 100vh; width: 78vh;'} position: relative; container-type: size;">
