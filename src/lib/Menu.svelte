@@ -11,12 +11,12 @@
 
     async function saveCharacterSheet() {
         saves.update(currentSaves => {
-            return { ...currentSaves, [$characterSheet.name || "character"]: $characterSheet };
+            return { ...currentSaves, [$characterSheet.name || "character"]: structuredClone($characterSheet) };
         });
     }
 
     async function loadCharacterSheet(name: string) {
-        const savedSheet = $saves[name];
+        const savedSheet = structuredClone($saves[name]);
         if (savedSheet) {
             characterSheet.set(savedSheet);
         } else {
@@ -45,7 +45,7 @@
             reader.onload = event => {
                 try {
                     const importedSheet = JSON.parse(event.target?.result as string);
-                    characterSheet.set(importedSheet);
+                    characterSheet.set(structuredClone(importedSheet));
                 } catch (error) {
                     alert("Failed to import character sheet: Invalid JSON");
                 }
