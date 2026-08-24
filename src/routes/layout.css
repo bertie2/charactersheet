@@ -67,6 +67,12 @@ select {
 	transition-timing-function: ease-out;
 }
 
+/* The pan/zoom surface disables text selection, but fields must stay editable */
+.panzoom-root :is(input, textarea) {
+	user-select: text;
+	-webkit-user-select: text;
+}
+
 /* In-sheet action buttons (Add/Remove weapon, spell, item) — positioned via inline cqh */
 .sheet-btn {
 	position: absolute;
