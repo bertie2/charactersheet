@@ -1,3 +1,110 @@
 @import 'tailwindcss';
 @plugin '@tailwindcss/forms';
 @plugin '@tailwindcss/typography';
+
+@theme {
+	--font-display: 'Cinzel', ui-serif, Georgia, serif;
+}
+
+:root {
+	color-scheme: dark;
+}
+
+html {
+	-webkit-text-size-adjust: 100%;
+}
+
+body {
+	margin: 0;
+	min-height: 100dvh;
+	background-color: #0c0a09;
+}
+
+/* Subtle fixed ambient glow behind all routes */
+.app-shell {
+	position: relative;
+	overflow-x: hidden;
+}
+
+.app-glow {
+	position: fixed;
+	inset: 0;
+	z-index: 0;
+	pointer-events: none;
+	background:
+		radial-gradient(60rem 30rem at 15% -5%, rgba(217, 119, 6, 0.14), transparent 60%),
+		radial-gradient(50rem 32rem at 90% 0%, rgba(120, 53, 15, 0.12), transparent 55%),
+		radial-gradient(40rem 40rem at 50% 110%, rgba(30, 41, 59, 0.5), transparent 60%);
+}
+
+/* Scrollbars that match the theme */
+* {
+	scrollbar-width: thin;
+	scrollbar-color: rgba(120, 113, 108, 0.5) transparent;
+}
+*::-webkit-scrollbar {
+	width: 10px;
+	height: 10px;
+}
+*::-webkit-scrollbar-thumb {
+	background: rgba(120, 113, 108, 0.45);
+	border-radius: 999px;
+	border: 2px solid transparent;
+	background-clip: content-box;
+}
+*::-webkit-scrollbar-track {
+	background: transparent;
+}
+
+/* Smooth color transitions for interactive elements */
+button,
+a,
+input,
+textarea,
+select {
+	transition-property: color, background-color, border-color, box-shadow, transform, opacity;
+	transition-duration: 150ms;
+	transition-timing-function: ease-out;
+}
+
+/* In-sheet action buttons (Add/Remove weapon, spell, item) — positioned via inline cqh */
+.sheet-btn {
+	position: absolute;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 0.2cqh;
+	padding: 0;
+	border: none;
+	cursor: pointer;
+	height: 2cqh;
+	font-size: 0.95cqh;
+	line-height: 1;
+	font-weight: 700;
+	letter-spacing: 0.03em;
+	border-radius: 0.4cqh;
+	box-shadow: 0 0.15cqh 0.4cqh rgba(0, 0, 0, 0.25);
+	user-select: none;
+}
+
+.sheet-btn-add {
+	width: 9.8cqh;
+	color: #1c1917;
+	background: linear-gradient(180deg, #fbbf24, #f59e0b);
+	border: 0.06cqh solid rgba(120, 53, 15, 0.6);
+}
+
+.sheet-btn-add:hover {
+	filter: brightness(1.08);
+}
+
+.sheet-btn-remove {
+	width: 9cqh;
+	color: #fecaca;
+	background: linear-gradient(180deg, #57534e, #44403c);
+	border: 0.06cqh solid rgba(0, 0, 0, 0.4);
+}
+
+.sheet-btn-remove:hover {
+	filter: brightness(1.12);
+}
