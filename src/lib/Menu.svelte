@@ -2,6 +2,8 @@
 	import { goto } from '$app/navigation';
 	import { loadCharacter, saves } from '$lib/characterSheet';
 	import { gunzipSheet, sheetBlob } from '$lib/sheetIO';
+	import QrExportDialog from './QrExportDialog.svelte';
+	import QrImportDialog from './QrImportDialog.svelte';
 	import { createEmptyCharacterSheet, type CharacterSheet } from './types';
 	import {
 		ChevronDown,
@@ -11,7 +13,9 @@
 		FolderOpen,
 		Menu as MenuIcon,
 		Plus,
+		QrCode,
 		Save,
+		ScanLine,
 		Trash2,
 		X
 	} from '@lucide/svelte';
@@ -21,6 +25,8 @@
 
 	let loadOpen = $state(false);
 	let menuOpen = $state(false);
+	let qrExportOpen = $state(false);
+	let qrImportOpen = $state(false);
 	let savedFlash = $state<string | null>(null);
 	let flashTimer: ReturnType<typeof setTimeout> | undefined;
 
@@ -237,6 +243,24 @@
 				<FileUp class="h-4 w-4" />
 				<span class="hidden xl:inline">Import</span>
 			</button>
+
+			<button
+				onclick={() => (qrExportOpen = true)}
+				title="Export as QR codes"
+				class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm font-medium text-stone-200 transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+			>
+				<QrCode class="h-4 w-4" />
+				<span class="hidden xl:inline">QR Export</span>
+			</button>
+
+			<button
+				onclick={() => (qrImportOpen = true)}
+				title="Import from QR codes"
+				class="inline-flex h-9 items-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-2.5 text-sm font-medium text-stone-200 transition hover:border-white/20 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40"
+			>
+				<ScanLine class="h-4 w-4" />
+				<span class="hidden xl:inline">QR Import</span>
+			</button>
 		</div>
 
 		<!-- Mobile menu toggle -->
@@ -318,6 +342,28 @@
 					<FileUp class="h-4 w-4" />
 					Import
 				</button>
+
+				<button
+					onclick={() => {
+						qrExportOpen = true;
+						menuOpen = false;
+					}}
+					class="mobile-action"
+				>
+					<QrCode class="h-4 w-4" />
+					QR export
+				</button>
+
+				<button
+					onclick={() => {
+						qrImportOpen = true;
+						menuOpen = false;
+					}}
+					class="mobile-action"
+				>
+					<ScanLine class="h-4 w-4" />
+					QR import
+				</button>
 			</div>
 		</div>
 	{/if}
@@ -330,6 +376,18 @@
 	>
 		{savedFlash}
 	</div>
+{/if}
+
+<!-- QR transfer dialogs -->
+{#if qrExportOpen}
+	<QrExportDialog {characterSheet} onClose={() => (qrExportOpen = false)} />
+{/if}
+{#if qrImportOpen}
+	<QrImportDialog
+		{characterSheet}
+		onClose={() => (qrImportOpen = false)}
+		onImported={(name) => showFlash(`Imported “${name}” via QR`)}
+	/>
 {/if}
 
 <style>
