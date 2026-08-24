@@ -15,7 +15,7 @@
 		onImported?: (name: string) => void;
 	} = $props();
 
-	let scanned = $state<Map<number, QrChunk>>(new Map());
+	let scanned = $state<QrChunk[]>([]);
 	let total = $state(0);
 	let done = $state(false);
 	let importedName = $state('');
@@ -27,12 +27,12 @@
 		const chunk = parseQrChunk(text);
 		if (!chunk) return; // ignore unrelated QR codes
 		if (total !== 0 && chunk.total !== total) return;
-		if (scanned.has(chunk.index)) return; // already scanned this one
-		scanned.set(chunk.index, chunk);
+		if (scanned.some((c) => c.index === chunk.index)) return; // already scanned this one
+		scanned = [...scanned, chunk];
 		total = chunk.total;
-		if (scanned.size === total) {
+		if (scanned.length === total) {
 			try {
-				const sheet = qrsToSheet([...scanned.values()]);
+				const sheet = qrsToSheet(scanned);
 				characterSheet.set(structuredClone(sheet));
 				importedName = sheet.name || 'Imported character';
 				done = true;
@@ -108,14 +108,14 @@
 					{#if total === 0}
 						Point your camera at the first QR code
 					{:else}
-						<span class="font-medium text-stone-200">{scanned.size}</span> of {total} scanned
+						<span class="font-medium text-stone-200">{scanned.length}</span> of {total} scanned
 					{/if}
 				</p>
 				{#if total > 0}
 					<div class="flex items-center gap-1.5">
 						{#each Array.from({ length: total }, (_, i) => i) as i (i)}
 							<span
-								class="h-2.5 w-2.5 rounded-full {scanned.has(i + 1)
+								class="h-2.5 w-2.5 rounded-full {scanned.some((c) => c.index === i + 1)
 									? 'bg-amber-400'
 									: 'bg-white/20'}"
 							></span>
