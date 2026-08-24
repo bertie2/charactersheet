@@ -27,3 +27,9 @@ vite.config.ts.timestamp-*
 /playwright-report
 /blob-report
 /playwright/.cache
+
+# Cloudflare Types
+/worker-configuration.d.ts
+
+.dev.vars*
+!.dev.vars.example
