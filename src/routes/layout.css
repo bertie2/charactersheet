@@ -79,38 +79,54 @@ select {
 	display: flex;
 	align-items: center;
 	justify-content: center;
-	gap: 0.2cqh;
 	padding: 0;
 	border: none;
 	cursor: pointer;
-	height: 2cqh;
-	font-size: 0.95cqh;
-	line-height: 1;
-	font-weight: 700;
-	letter-spacing: 0.03em;
-	border-radius: 0.4cqh;
-	box-shadow: 0 0.15cqh 0.4cqh rgba(0, 0, 0, 0.25);
+	width: 2.6cqh;
+	height: 2.6cqh;
+	border-radius: 0.6cqh;
+	box-shadow: 0 0.2cqh 0.55cqh rgba(0, 0, 0, 0.35);
 	user-select: none;
+	transition:
+		filter 120ms ease-out,
+		box-shadow 120ms ease-out,
+		transform 120ms ease-out;
+}
+
+.sheet-btn:active {
+	transform: translateY(0.12cqh) scale(0.94);
+}
+
+.sheet-btn-icon {
+	width: 1.45cqh;
+	height: 1.45cqh;
+}
+
+.sheet-btn:focus-visible {
+	outline: none;
+	box-shadow:
+		0 0.2cqh 0.55cqh rgba(0, 0, 0, 0.35),
+		0 0 0 0.18cqh rgba(245, 158, 11, 0.7);
 }
 
 .sheet-btn-add {
-	width: 9.8cqh;
 	color: #1c1917;
 	background: linear-gradient(180deg, #fbbf24, #f59e0b);
-	border: 0.06cqh solid rgba(120, 53, 15, 0.6);
+	border: 0.08cqh solid rgba(120, 53, 15, 0.55);
 }
 
 .sheet-btn-add:hover {
-	filter: brightness(1.08);
+	filter: brightness(1.1);
+	box-shadow: 0 0.25cqh 0.8cqh rgba(245, 158, 11, 0.55);
 }
 
 .sheet-btn-remove {
-	width: 9cqh;
 	color: #fecaca;
-	background: linear-gradient(180deg, #57534e, #44403c);
-	border: 0.06cqh solid rgba(0, 0, 0, 0.4);
+	background: linear-gradient(180deg, #57534e, #3f3a36);
+	border: 0.08cqh solid rgba(0, 0, 0, 0.45);
 }
 
 .sheet-btn-remove:hover {
-	filter: brightness(1.12);
+	filter: brightness(1.18);
+	box-shadow: 0 0.25cqh 0.8cqh rgba(0, 0, 0, 0.5);
 }

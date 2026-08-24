@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Input from './Input.svelte';
 	import { type CharacterSheet, createEmptySpell, createEmptyMagicItemAttunment } from './types';
+	import { Minus, Plus } from '@lucide/svelte';
 	import type { Writable } from 'svelte/store';
 
 	export let characterSheet: Writable<CharacterSheet>;
@@ -157,17 +158,21 @@
 	{/each}
 	<button
 		class="sheet-btn sheet-btn-add"
+		title="Add spell"
+		aria-label="Add spell"
 		style="top: {23 + 2.495 * $characterSheet.spells.length}cqh; left: 6cqh;"
 		onclick={() => ($characterSheet.spells = [...$characterSheet.spells, createEmptySpell()])}
 	>
-		+ Add Spell
+		<Plus class="sheet-btn-icon" />
 	</button>
 	<button
 		class="sheet-btn sheet-btn-remove"
-		style="top: {23 + 2.495 * $characterSheet.spells.length}cqh; left: 14cqh;"
+		title="Remove spell"
+		aria-label="Remove spell"
+		style="top: {23 + 2.495 * $characterSheet.spells.length}cqh; left: 9.3cqh;"
 		onclick={() => ($characterSheet.spells = [...$characterSheet.spells.slice(0, -1)])}
 	>
-		− Remove
+		<Minus class="sheet-btn-icon" />
 	</button>
 
 	<!-- magic item attunement -->
@@ -190,6 +195,8 @@
 	{/each}
 	<button
 		class="sheet-btn sheet-btn-add"
+		title="Add magic item"
+		aria-label="Add magic item"
 		style="top: {77 + 2.495 * $characterSheet.magicItems.length}cqh; left: 56cqh;"
 		onclick={() =>
 			($characterSheet.magicItems = [
@@ -197,14 +204,16 @@
 				createEmptyMagicItemAttunment()
 			])}
 	>
-		+ Add Item
+		<Plus class="sheet-btn-icon" />
 	</button>
 	<button
 		class="sheet-btn sheet-btn-remove"
-		style="top: {77 + 2.495 * $characterSheet.magicItems.length}cqh; left: 64cqh;"
+		title="Remove magic item"
+		aria-label="Remove magic item"
+		style="top: {77 + 2.495 * $characterSheet.magicItems.length}cqh; left: 59.3cqh;"
 		onclick={() => ($characterSheet.magicItems = [...$characterSheet.magicItems.slice(0, -1)])}
 	>
-		− Remove
+		<Minus class="sheet-btn-icon" />
 	</button>
 
 	<!-- currency -->

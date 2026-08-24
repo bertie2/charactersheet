@@ -1,6 +1,7 @@
 <script lang="ts">
 	import Input from './Input.svelte';
 	import { createEmptyWeaponCantrip, type CharacterSheet } from './types';
+	import { Minus, Plus } from '@lucide/svelte';
 	import type { Writable } from 'svelte/store';
 
 	export let characterSheet: Writable<CharacterSheet>;
@@ -796,6 +797,8 @@
 	{/each}
 	<button
 		class="sheet-btn sheet-btn-add"
+		title="Add weapon"
+		aria-label="Add weapon"
 		style="top: {25.5 + 2.495 * $characterSheet.weaponsAndCantrips.length}cqh; left: 30cqh;"
 		onclick={() =>
 			($characterSheet.weaponsAndCantrips = [
@@ -803,15 +806,17 @@
 				createEmptyWeaponCantrip()
 			])}
 	>
-		+ Add Weapon
+		<Plus class="sheet-btn-icon" />
 	</button>
 	<button
 		class="sheet-btn sheet-btn-remove"
-		style="top: {25.5 + 2.495 * $characterSheet.weaponsAndCantrips.length}cqh; left: 41cqh;"
+		title="Remove weapon"
+		aria-label="Remove weapon"
+		style="top: {25.5 + 2.495 * $characterSheet.weaponsAndCantrips.length}cqh; left: 33.3cqh;"
 		onclick={() =>
 			($characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips.slice(0, -1)])}
 	>
-		− Remove
+		<Minus class="sheet-btn-icon" />
 	</button>
 
 	<!-- Class Features -->
