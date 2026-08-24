@@ -15,9 +15,17 @@
 	<img src="/page2.png" alt="Page 2" style="height: 100%; width: 100%;" />
 
 	<!-- spellcasting -->
-	<Input bind:value={$characterSheet.spellcastingAbility} width={135} height={20} x={35} y={20} />
+	<Input
+		bind:value={$characterSheet.spellcastingAbility}
+		name="spellcastingAbility"
+		width={135}
+		height={20}
+		x={35}
+		y={20}
+	/>
 	<Input
 		bind:value={$characterSheet.spellCastingModifier}
+		name="spellCastingModifier"
 		width={40}
 		height={30}
 		x={20}
@@ -28,6 +36,7 @@
 	/>
 	<Input
 		bind:value={$characterSheet.spellSaveDC}
+		name="spellSaveDC"
 		width={40}
 		height={30}
 		x={20}
@@ -37,6 +46,7 @@
 	/>
 	<Input
 		bind:value={$characterSheet.spellAttackBonus}
+		name="spellAttackBonus"
 		width={40}
 		height={30}
 		x={20}

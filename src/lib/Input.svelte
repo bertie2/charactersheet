@@ -9,6 +9,8 @@
 	export let fontSize: number = 10;
 	export let signNumber: boolean = false;
 	export let centerText: boolean = false;
+	/** Optional field id — emitted as `name` + `data-testid` for styling/tests. */
+	export let name: string | undefined = undefined;
 </script>
 
 {#if signNumber && type === 'number' && typeof value === 'number' && value > 0}
@@ -25,6 +27,8 @@
 	<input
 		type="checkbox"
 		class="input sheet-checkbox"
+		{name}
+		data-testid={name}
 		bind:checked
 		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
 			10.0}cqh; height: {height / 10.0}cqh;"
@@ -32,6 +36,8 @@
 {:else if type === 'textArea'}
 	<textarea
 		class="input sheet-textarea"
+		{name}
+		data-testid={name}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
 			10.0}cqh; height: {height / 10.0}cqh; font-size: {fontSize /
@@ -41,6 +47,8 @@
 	<input
 		{type}
 		class="input sheet-field {centerText ? 'text-center' : ''}"
+		{name}
+		data-testid={name}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {(signNumber &&
 		type === 'number' &&

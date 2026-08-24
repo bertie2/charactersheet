@@ -14,16 +14,38 @@
 >
 	<img src="/page1.png" alt="Page 1" style="height: 100%; width: 100%;" />
 	<!-- Char Summary -->
-	<Input bind:value={$characterSheet.name} width={270} height={18} x={40} y={20} />
-	<Input bind:value={$characterSheet.background} width={130} height={18} x={40} y={48} />
-	<Input bind:value={$characterSheet.class} width={120} height={18} x={195} y={48} />
-	<Input bind:value={$characterSheet.species} width={130} height={18} x={40} y={76} />
-	<Input bind:value={$characterSheet.subsclass} width={120} height={18} x={195} y={76} />
+	<Input bind:value={$characterSheet.name} name="name" width={270} height={18} x={40} y={20} />
+	<Input
+		bind:value={$characterSheet.background}
+		name="background"
+		width={130}
+		height={18}
+		x={40}
+		y={48}
+	/>
+	<Input bind:value={$characterSheet.class} name="class" width={120} height={18} x={195} y={48} />
+	<Input
+		bind:value={$characterSheet.species}
+		name="species"
+		width={130}
+		height={18}
+		x={40}
+		y={76}
+	/>
+	<Input
+		bind:value={$characterSheet.subsclass}
+		name="subclass"
+		width={120}
+		height={18}
+		x={195}
+		y={76}
+	/>
 
 	<!-- Level and XP -->
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.level}
+		name="level"
 		width={50}
 		height={27}
 		x={332}
@@ -44,6 +66,7 @@
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.armourClass}
+		name="armourClass"
 		width={50}
 		height={27}
 		x={414}
@@ -63,6 +86,7 @@
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.hitPoints}
+		name="hitPoints"
 		width={70}
 		height={40}
 		x={484}
@@ -72,6 +96,7 @@
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.maxHitPoints}
+		name="maxHitPoints"
 		width={60}
 		height={18}
 		x={565}
@@ -116,6 +141,7 @@
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.proficiencyBonus}
+		name="proficiencyBonus"
 		width={40}
 		height={40}
 		x={54}
@@ -138,6 +164,7 @@
 	<Input
 		type={'number'}
 		bind:value={$characterSheet.strengthScore}
+		name="strengthScore"
 		width={30}
 		height={22}
 		x={80}

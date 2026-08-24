@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { goto } from '$app/navigation';
 	import { loadCharacter, saves } from '$lib/characterSheet';
+	import { gunzipSheet, sheetBlob } from '$lib/sheetIO';
 	import { createEmptyCharacterSheet, type CharacterSheet } from './types';
 	import {
 		ChevronDown,
@@ -58,33 +59,35 @@
 	}
 
 	function exportSheet() {
-		const dataStr =
-			'data:text/json;charset=utf-8,' + encodeURIComponent(JSON.stringify($characterSheet));
+		const blob = sheetBlob($characterSheet);
+		const url = URL.createObjectURL(blob);
 		const a = document.createElement('a');
-		a.setAttribute('href', dataStr);
-		a.setAttribute('download', `${$characterSheet.name?.trim() || 'character'}.json`);
+		a.href = url;
+		a.download = `${$characterSheet.name?.trim() || 'character'}.json.gz`;
 		document.body.appendChild(a);
 		a.click();
 		document.body.removeChild(a);
+		setTimeout(() => URL.revokeObjectURL(url), 1000);
 	}
 
 	function importSheet() {
 		const input = document.createElement('input');
 		input.type = 'file';
-		input.accept = 'application/json';
+		input.accept = '.json,.gz,application/json,application/gzip';
 		input.onchange = (e) => {
 			const file = (e.target as HTMLInputElement).files?.[0];
 			if (!file) return;
 			const reader = new FileReader();
 			reader.onload = (event) => {
 				try {
-					characterSheet.set(structuredClone(JSON.parse(event.target?.result as string)));
+					const bytes = new Uint8Array(event.target?.result as ArrayBuffer);
+					characterSheet.set(structuredClone(gunzipSheet(bytes)));
 					showFlash('Character imported');
 				} catch {
-					alert('Failed to import character sheet: Invalid JSON');
+					alert('Failed to import character sheet: invalid or corrupt file');
 				}
 			};
-			reader.readAsText(file);
+			reader.readAsArrayBuffer(file);
 		};
 		input.click();
 	}
