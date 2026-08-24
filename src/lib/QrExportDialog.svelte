@@ -18,7 +18,7 @@
 	/** Physical (device) pixels the QR display area has available for its width. */
 	function displayPx(): number {
 		const dpr = window.devicePixelRatio || 1;
-		const cssW = Math.max(96, Math.min(280, canvasEl?.clientWidth ?? 280));
+		const cssW = Math.max(96, canvasEl?.clientWidth ?? 280);
 		return Math.round(cssW * dpr);
 	}
 
@@ -90,7 +90,7 @@
 		onclick={onClose}
 	></button>
 	<div
-		class="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/10 bg-stone-900/95 p-5 shadow-2xl shadow-black/60"
+		class="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/10 bg-stone-900/95 p-5 shadow-2xl shadow-black/60 sm:max-w-xl lg:max-w-3xl"
 	>
 		<div class="mb-4 flex items-center justify-between">
 			<h2 class="flex items-center gap-2 font-display text-lg font-semibold text-stone-100">
@@ -110,7 +110,7 @@
 		<div class="relative flex items-center justify-center rounded-xl bg-white p-3">
 			<canvas
 				bind:this={canvasEl}
-				class="block h-auto w-full max-w-[280px]"
+				class="block h-auto w-full max-w-[280px] sm:max-w-[480px] lg:max-w-[640px]"
 				style="aspect-ratio: 1 / 1;"
 			></canvas>
 			{#if chunks.length === 0 || !hasRendered}
