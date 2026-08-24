@@ -20,6 +20,7 @@
 	let done = $state(false);
 	let importedName = $state('');
 	let error = $state<string | null>(null);
+	let camAspect = $state(1);
 
 	function handleScan(text: string) {
 		if (done) return;
@@ -91,8 +92,11 @@
 				</button>
 			</div>
 		{:else}
-			<div class="aspect-video overflow-hidden rounded-xl border border-white/10 bg-black">
-				<QrScanner onScan={handleScan} />
+			<div
+				class="overflow-hidden rounded-xl border border-white/10 bg-black"
+				style="aspect-ratio: {camAspect};"
+			>
+				<QrScanner bind:aspectRatio={camAspect} onScan={handleScan} />
 			</div>
 
 			{#if error}
@@ -122,7 +126,8 @@
 
 			<p class="mt-4 text-center text-xs leading-relaxed text-stone-500">
 				Scan the QR codes from the exporting device, one after another. The character is reassembled
-				automatically once all codes are scanned.
+				automatically once all codes are scanned. If scanning does not start automatically, tap the
+				Scan button.
 			</p>
 		{/if}
 	</div>
