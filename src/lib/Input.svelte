@@ -11,6 +11,15 @@
 	export let centerText: boolean = false;
 	/** Optional field id — emitted as `name` + `data-testid` for styling/tests. */
 	export let name: string | undefined = undefined;
+	/** Optional accessible name, for fields the printed sheet labels visually. */
+	export let label: string | undefined = undefined;
+	/**
+	 * Owns the checked state when supplied, instead of `bind:checked`: the box
+	 * stays a dumb view of `checked` and reports intended flips through here. Used
+	 * by the spell-slot tally, where the tick count (not a lone boolean) is the
+	 * value that actually changes.
+	 */
+	export let onToggle: ((next: boolean) => void) | undefined = undefined;
 
 	/**
 	 * Field sizes arrive in the artwork's design units (1000 = sheet height) and
@@ -33,21 +42,35 @@
 		+
 	</p>
 {/if}
-{#if type === 'checkbox'}
-	<input
-		type="checkbox"
-		class="input sheet-checkbox"
-		{name}
-		data-testid={name}
-		bind:checked
-		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
-			10.0}cqh; height: {height / 10.0}cqh;"
-	/>
-{:else if type === 'textArea'}
+{#if type === 'checkbox'}{#if onToggle}
+		<input
+			type="checkbox"
+			class="input sheet-checkbox"
+			{name}
+			data-testid={name}
+			aria-label={label}
+			{checked}
+			onclick={() => onToggle(!checked)}
+			style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
+				10.0}cqh; height: {height / 10.0}cqh;"
+		/>
+	{:else}
+		<input
+			type="checkbox"
+			class="input sheet-checkbox"
+			{name}
+			data-testid={name}
+			aria-label={label}
+			bind:checked
+			style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
+				10.0}cqh; height: {height / 10.0}cqh;"
+		/>
+	{/if}{:else if type === 'textArea'}
 	<textarea
 		class="input sheet-textarea"
 		{name}
 		data-testid={name}
+		aria-label={label}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
 			10.0}cqh; height: {height / 10.0}cqh; font-size: {sheetSize(
@@ -60,6 +83,7 @@
 		class="input sheet-field {centerText ? 'text-center' : ''}"
 		{name}
 		data-testid={name}
+		aria-label={label}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {(signNumber &&
 		type === 'number' &&

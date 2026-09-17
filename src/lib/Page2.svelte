@@ -1,12 +1,30 @@
 <script lang="ts">
 	import Input from './Input.svelte';
 	import { type CharacterSheet, createEmptySpell, createEmptyMagicItemAttunment } from './types';
+	import {
+		SPELL_SLOT_ROWS,
+		applyExpended,
+		expendedSlots,
+		nextExpended,
+		tickRect
+	} from './spellSlots';
 	import { Minus, Plus } from '@lucide/svelte';
 	import type { Writable } from 'svelte/store';
 
 	export let characterSheet: Writable<CharacterSheet>;
 	export let sheetWidth: number;
 	export let sheetHeight: number;
+
+	/** Records a new expended-slot tally against a printed tick row. */
+	function setExpended(levelIndex: number, expended: number) {
+		characterSheet.update((sheet) => {
+			const slot = sheet.spellSlots?.[levelIndex];
+			if (!slot) return sheet;
+			const spellSlots = sheet.spellSlots.slice();
+			spellSlots[levelIndex] = applyExpended(slot, expended);
+			return { ...sheet, spellSlots };
+		});
+	}
 </script>
 
 <div
@@ -274,176 +292,37 @@
 		fontSize={20}
 	/>
 
-	<!-- spell slots -->
-	<!-- level 1 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 0}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[0].max}
-			width={20}
-			height={15}
-			x={233}
-			y={108}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[0].current}
-			width={49}
-			height={15}
-			x={257}
-			y={108}
-		/>
-	{/if}
-	<!-- level 2 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 1}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[1].max}
-			width={20}
-			height={15}
-			x={233}
-			y={125}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[1].current}
-			width={49}
-			height={15}
-			x={257}
-			y={125}
-		/>
-	{/if}
-	<!-- level 3 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 2}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[2].max}
-			width={20}
-			height={15}
-			x={233}
-			y={143}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[2].current}
-			width={49}
-			height={15}
-			x={257}
-			y={143}
-		/>
-	{/if}
-	<!-- level 4 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 3}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[3].max}
-			width={20}
-			height={15}
-			x={348}
-			y={108}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[3].current}
-			width={40}
-			height={15}
-			x={368}
-			y={108}
-		/>
-	{/if}
-	<!-- level 5 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 4}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[4].max}
-			width={20}
-			height={15}
-			x={348}
-			y={125}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[4].current}
-			width={40}
-			height={15}
-			x={368}
-			y={125}
-		/>
-	{/if}
-	<!-- level 6 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 5}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[5].max}
-			width={20}
-			height={15}
-			x={348}
-			y={143}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[5].current}
-			width={40}
-			height={15}
-			x={368}
-			y={143}
-		/>
-	{/if}
-	<!-- level 7 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 6}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[6].max}
-			width={20}
-			height={15}
-			x={450}
-			y={108}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[6].current}
-			width={30}
-			height={15}
-			x={470}
-			y={108}
-		/>
-	{/if}
-	<!-- level 8 -->
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 7}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[7].max}
-			width={20}
-			height={15}
-			x={450}
-			y={125}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[7].current}
-			width={30}
-			height={15}
-			x={470}
-			y={125}
-		/>
-		<!-- level 9 -->
-	{/if}
-	{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > 8}
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[8].max}
-			width={20}
-			height={15}
-			x={450}
-			y={143}
-		/>
-		<Input
-			type="number"
-			bind:value={$characterSheet.spellSlots[8].current}
-			width={30}
-			height={15}
-			x={470}
-			y={143}
-		/>
-	{/if}
+	<!--
+		Spell slots. The artwork prints a tally of tick targets per level (see
+		`SPELL_SLOT_ROWS`): `max` is the slot total and `current` is what is left, so
+		`max - current` boxes are ticked. Ticking the nth box records n expended
+		slots; ticking the box that is already the last one ticked clears it.
+	-->
+	{#each SPELL_SLOT_ROWS as row (row.level)}
+		{#if $characterSheet.spellSlots && $characterSheet.spellSlots.length > row.level}
+			{@const expended = expendedSlots($characterSheet.spellSlots[row.level], row.ticks)}
+			<Input
+				type="number"
+				bind:value={$characterSheet.spellSlots[row.level].max}
+				width={row.max.width}
+				height={15}
+				x={row.max.x}
+				y={row.max.y}
+			/>
+			{#each row.offsets as index (index)}
+				{@const box = tickRect(row, index)}
+				<Input
+					type="checkbox"
+					name="spellSlotTick-{row.level + 1}-{index + 1}"
+					label="Level {row.level + 1} spell slot {index + 1} of {row.ticks} expended"
+					checked={index < expended}
+					onToggle={() => setExpended(row.level, nextExpended(expended, index))}
+					x={box.x}
+					y={box.y}
+					width={box.width}
+					height={box.height}
+				/>
+			{/each}
+		{/if}
+	{/each}
 </div>

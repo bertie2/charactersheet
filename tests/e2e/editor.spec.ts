@@ -160,3 +160,56 @@ test('imports a legacy plain-JSON file (backward compatible)', async ({ page }) 
 	await expect(page.getByTestId('name')).toHaveValue('Legacy Hero');
 	await expect(page.getByTestId('background')).toHaveValue('Hermit');
 });
+
+test('ticks expended spell slots on the printed tally', async ({ page }) => {
+	/** The persisted spell slots, straight out of localStorage. */
+	const slots = () =>
+		page.evaluate(
+			() =>
+				(
+					JSON.parse(localStorage.getItem('characterSheet') ?? '{}') as {
+						spellSlots?: { level: number; current: number; max: number }[];
+					}
+				).spellSlots ?? []
+		);
+
+	const tick1 = page.getByTestId('spellSlotTick-1-1');
+	const tick3 = page.getByTestId('spellSlotTick-1-3');
+
+	await expect(tick1).toBeVisible();
+	await expect(tick1).not.toBeChecked();
+
+	// Ticking the third box records three expended 1st-level slots. The total was
+	// empty, so it is raised to match rather than silently losing the tick.
+	await tick3.click();
+	await expect(tick1).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	await expect(tick3).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-4')).not.toBeChecked();
+	expect(await slots()).toContainEqual({ level: 1, max: 3, current: 0 });
+
+	// Clicking the last ticked box again clears it back to two.
+	await tick3.click();
+	await expect(tick3).not.toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	expect(await slots()).toContainEqual({ level: 1, max: 3, current: 1 });
+
+	// The tally is persisted, so a reload keeps it.
+	await page.reload();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-3')).not.toBeChecked();
+
+	// A higher level keeps its own tally.
+	await page.getByTestId('spellSlotTick-5-2').click();
+	await expect(page.getByTestId('spellSlotTick-5-1')).toBeChecked();
+	expect(await slots()).toContainEqual({ level: 5, max: 2, current: 0 });
+	// ...and the level below it is untouched.
+	expect(await slots()).toContainEqual({ level: 4, max: 0, current: 0 });
+
+	// The artwork prints fewer boxes at higher levels: 3 at 5th, 2 at 6th, 1 at 8th.
+	await expect(page.getByTestId('spellSlotTick-5-3')).toBeVisible();
+	await expect(page.getByTestId('spellSlotTick-6-3')).toHaveCount(0);
+	await expect(page.getByTestId('spellSlotTick-8-1')).toBeVisible();
+	await expect(page.getByTestId('spellSlotTick-8-2')).toHaveCount(0);
+	await expect(page.getByTestId('spellSlotTick-9-2')).toHaveCount(0);
+});
