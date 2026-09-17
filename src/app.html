@@ -1,12 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="en" style="background-color: #241406">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1" />
+		<meta name="theme-color" content="#241406" />
 		<link rel="preconnect" href="https://fonts.googleapis.com" />
 		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<!--
+			Two families only:
+			- Cinzel       -> display accents (wordmark, hero, page/card titles)
+			- Alegreya Sans -> every functional surface, including the sheet fields
+			Alegreya Sans is the sans companion of Alegreya (same designer, same
+			warmth) but is far clearer at the small sizes used on the character sheet.
+			It ships 100/300/400/500/700/800 — no 600 — so the theme maps the
+			`font-semibold` step onto the real 500 instance.
+		-->
 		<link
-			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;600;700&display=swap"
+			href="https://fonts.googleapis.com/css2?family=Cinzel:wght@500;700&family=Alegreya+Sans:ital,wght@0,400;0,500;0,700;1,400&display=swap"
 			rel="stylesheet"
 		/>
 		%sveltekit.head%

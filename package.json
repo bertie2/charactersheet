@@ -16,6 +16,7 @@
 		"test": "npm run test:unit -- --run",
 		"test:e2e": "playwright test",
 		"gen": "wrangler types",
+		"gen:wood": "node scripts/generate-wood.mjs",
 		"deploy": "npm run build && wrangler deploy",
 		"cf-typegen": "wrangler types"
 	},

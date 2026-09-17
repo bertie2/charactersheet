@@ -88,12 +88,14 @@
 	<video bind:this={videoEl} muted playsinline class="block h-full w-full object-cover"></video>
 	{#if error}
 		<div
-			class="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-red-300"
+			class="absolute inset-0 flex items-center justify-center p-4 text-center text-sm text-seal-400"
 		>
 			{error}
 		</div>
 	{:else if !ready}
-		<div class="absolute inset-0 flex items-center justify-center text-sm text-stone-400">
+		<div
+			class="absolute inset-0 flex items-center justify-center text-sm text-parchment-300 italic"
+		>
 			Starting camera…
 		</div>
 	{/if}
@@ -101,9 +103,10 @@
 	{#if ready}
 		{#if scanMessage}
 			<div class="absolute inset-x-0 top-0 z-10 flex justify-center p-3" role="status">
-				<span class="rounded-full bg-black/70 px-3 py-1 text-xs font-medium text-amber-300">
-					{scanMessage}
-				</span>
+				<span
+					class="rounded-sm bg-black/75 px-3 py-1 text-xs font-semibold tracking-wide text-brass-200"
+					>{scanMessage}</span
+				>
 			</div>
 		{/if}
 		<div class="absolute inset-x-0 bottom-0 z-10 flex justify-center p-3">
@@ -113,7 +116,7 @@
 				disabled={scanning}
 				title="Scan the QR code now"
 				aria-label="Scan the QR code now"
-				class="inline-flex items-center gap-2 rounded-full bg-amber-400 px-5 py-2 text-sm font-semibold text-stone-950 shadow-lg transition hover:bg-amber-300 disabled:opacity-60"
+				class="btn-brass inline-flex items-center gap-2 rounded-md px-5 py-2 text-sm font-semibold tracking-wide uppercase disabled:opacity-60"
 			>
 				<ScanLine class="h-4 w-4" />
 				{scanning ? 'Scanning…' : 'Scan'}

@@ -7,7 +7,8 @@
 	import { SHEET_ASPECT, viewport } from '$lib/utils';
 
 	// Chrome geometry used to compute the sheet size (px)
-	const NAVBAR_H = 64;
+	// NAVBAR_H matches the rendered <header>: h-16 content + 2px bottom border.
+	const NAVBAR_H = 66;
 	const PAD = 20;
 	const GAP = 24;
 

@@ -10,9 +10,10 @@
 </script>
 
 <div
+	class="sheet-page"
 	style="height: {sheetHeight}px; width: {sheetWidth}px; position: relative; container-type: size;"
 >
-	<img src="/page1.png" alt="Page 1" style="height: 100%; width: 100%;" />
+	<img src="/page1.png" alt="Page 1" class="sheet-frame" style="height: 100%; width: 100%;" />
 	<!-- Char Summary -->
 	<Input bind:value={$characterSheet.name} name="name" width={270} height={18} x={40} y={20} />
 	<Input

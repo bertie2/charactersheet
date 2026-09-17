@@ -10,9 +10,10 @@
 </script>
 
 <div
+	class="sheet-page"
 	style="height: {sheetHeight}px; width: {sheetWidth}px; position: relative; container-type: size;"
 >
-	<img src="/page2.png" alt="Page 2" style="height: 100%; width: 100%;" />
+	<img src="/page2.png" alt="Page 2" class="sheet-frame" style="height: 100%; width: 100%;" />
 
 	<!-- spellcasting -->
 	<Input
