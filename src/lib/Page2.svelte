@@ -1,6 +1,6 @@
 <script lang="ts">
 	import Input from './Input.svelte';
-	import { type CharacterSheet, createEmptySpell, createEmptyMagicItemAttunment } from './types';
+	import { type CharacterSheet } from './types';
 	import {
 		SPELL_SLOT_ROWS,
 		applyExpended,
@@ -8,7 +8,6 @@
 		nextExpended,
 		tickRect
 	} from './spellSlots';
-	import { Minus, Plus } from '@lucide/svelte';
 	import type { Writable } from 'svelte/store';
 
 	export let characterSheet: Writable<CharacterSheet>;
@@ -122,11 +121,13 @@
 		fontSize={10}
 	/>
 
-	<!-- Spells -->
+	<!-- Spells — every printed row is drawn up front -->
 	{#each $characterSheet.spells as spell, index}
 		<Input
 			type="number"
 			bind:value={$characterSheet.spells[index].level}
+			name="spell-{index + 1}-level"
+			label="Spell {index + 1} level"
 			width={25}
 			height={20}
 			x={25}
@@ -134,6 +135,8 @@
 		/>
 		<Input
 			bind:value={$characterSheet.spells[index].name}
+			name="spell-{index + 1}-name"
+			label="Spell {index + 1} name"
 			width={136}
 			height={20}
 			x={56}
@@ -185,30 +188,14 @@
 			y={228 + index * 25.1}
 		/>
 	{/each}
-	<button
-		class="sheet-btn sheet-btn-add"
-		title="Add spell"
-		aria-label="Add spell"
-		style="top: {23 + 2.495 * $characterSheet.spells.length}cqh; left: 6cqh;"
-		onclick={() => ($characterSheet.spells = [...$characterSheet.spells, createEmptySpell()])}
-	>
-		<Plus class="sheet-btn-icon" />
-	</button>
-	<button
-		class="sheet-btn sheet-btn-remove"
-		title="Remove spell"
-		aria-label="Remove spell"
-		style="top: {23 + 2.495 * $characterSheet.spells.length}cqh; left: 9.3cqh;"
-		onclick={() => ($characterSheet.spells = [...$characterSheet.spells.slice(0, -1)])}
-	>
-		<Minus class="sheet-btn-icon" />
-	</button>
 
-	<!-- magic item attunement -->
+	<!-- magic item attunement — every printed row is drawn up front -->
 	{#each $characterSheet.magicItems as magicItem, index}
 		<Input
 			type="checkbox"
 			bind:checked={$characterSheet.magicItems[index].attuned}
+			name="magicItem-{index + 1}-attuned"
+			label="Magic item {index + 1} attuned"
 			width={10}
 			height={10}
 			x={543}
@@ -216,34 +203,14 @@
 		/>
 		<Input
 			bind:value={$characterSheet.magicItems[index].name}
+			name="magicItem-{index + 1}-name"
+			label="Magic item {index + 1} name"
 			width={195}
 			height={18}
 			x={560}
 			y={770 + index * 25.1}
 		/>
 	{/each}
-	<button
-		class="sheet-btn sheet-btn-add"
-		title="Add magic item"
-		aria-label="Add magic item"
-		style="top: {77 + 2.495 * $characterSheet.magicItems.length}cqh; left: 56cqh;"
-		onclick={() =>
-			($characterSheet.magicItems = [
-				...$characterSheet.magicItems,
-				createEmptyMagicItemAttunment()
-			])}
-	>
-		<Plus class="sheet-btn-icon" />
-	</button>
-	<button
-		class="sheet-btn sheet-btn-remove"
-		title="Remove magic item"
-		aria-label="Remove magic item"
-		style="top: {77 + 2.495 * $characterSheet.magicItems.length}cqh; left: 59.3cqh;"
-		onclick={() => ($characterSheet.magicItems = [...$characterSheet.magicItems.slice(0, -1)])}
-	>
-		<Minus class="sheet-btn-icon" />
-	</button>
 
 	<!-- currency -->
 	<Input

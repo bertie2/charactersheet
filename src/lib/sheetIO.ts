@@ -1,5 +1,5 @@
 import { gzipSync, gunzipSync } from 'fflate';
-import type { CharacterSheet } from './types';
+import { normalizeSheet, type CharacterSheet } from './types';
 
 const encoder = new TextEncoder();
 const decoder = new TextDecoder();
@@ -18,6 +18,10 @@ export function gzipSheet(sheet: CharacterSheet): Uint8Array {
  * Deserialize a character sheet from gzipped JSON bytes.
  * Plain (non-gzipped) JSON is also accepted for backward compatibility.
  * Throws if the data is corrupt or not a valid character sheet.
+ *
+ * Export payloads from versions before the row lists were pre-populated are
+ * normalised on the way in, so an old file lands on a sheet with every printed
+ * row present. QR imports come through here too (`qrsToSheet`).
  */
 export function gunzipSheet(bytes: Uint8Array): CharacterSheet {
 	const raw = isGzipped(bytes) ? gunzipSync(bytes) : bytes;
@@ -29,7 +33,7 @@ export function gunzipSheet(bytes: Uint8Array): CharacterSheet {
 	) {
 		throw new Error('Invalid character sheet data');
 	}
-	return parsed as CharacterSheet;
+	return normalizeSheet(parsed as CharacterSheet);
 }
 
 /** Build a downloadable gzip Blob for a character sheet. */

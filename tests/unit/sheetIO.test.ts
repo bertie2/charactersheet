@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { gzipSheet, gunzipSheet, isGzipped, sheetBlob } from '../../src/lib/sheetIO';
-import { createEmptyCharacterSheet } from '../../src/lib/types';
+import {
+	MAGIC_ITEM_ROWS,
+	SPELL_ROWS,
+	WEAPON_CANTRIP_ROWS,
+	createEmptyCharacterSheet,
+	normalizeSheet
+} from '../../src/lib/types';
 
 /** Build a fully-populated sheet to exercise the round-trip. */
 function filledSheet() {
@@ -90,7 +96,9 @@ describe('character sheet gzip round-trip', () => {
 		const bytes = gzipSheet(original);
 		const restored = gunzipSheet(bytes);
 
-		expect(restored).toEqual(original);
+		// Import tops the row lists up to the printed counts, so compare against
+		// the normalised sheet: every value that was exported comes back intact.
+		expect(restored).toEqual(normalizeSheet(original));
 	});
 
 	it('round-trips through a Blob (what the UI downloads/uploads)', async () => {
@@ -98,7 +106,7 @@ describe('character sheet gzip round-trip', () => {
 		const blob = sheetBlob(original);
 		const buffer = await blob.arrayBuffer();
 		const restored = gunzipSheet(new Uint8Array(buffer));
-		expect(restored).toEqual(original);
+		expect(restored).toEqual(normalizeSheet(original));
 	});
 
 	it('is deterministic for the same sheet (fixed mtime)', () => {
@@ -112,7 +120,7 @@ describe('character sheet gzip round-trip', () => {
 		const original = filledSheet();
 		const plain = new TextEncoder().encode(JSON.stringify(original));
 		const restored = gunzipSheet(plain);
-		expect(restored).toEqual(original);
+		expect(restored).toEqual(normalizeSheet(original));
 	});
 
 	it('rejects corrupt or invalid data', () => {
@@ -122,5 +130,33 @@ describe('character sheet gzip round-trip', () => {
 		expect(() =>
 			gunzipSheet(new Uint8Array([0x1f, 0x8b, 0x08, 0x00, 0xff, 0xff, 0x00, 0x00]))
 		).toThrow();
+	});
+
+	it('tops the row lists up when importing a sheet exported by an older version', () => {
+		// An old export: the lists only hold the rows the user had filled in.
+		const old = filledSheet();
+		old.weaponsAndCantrips = [
+			{ name: 'Longbow', bonus: '+9', damage: '1d8+5', notes: 'Range 150' }
+		];
+		old.spells = old.spells.slice(0, 1);
+		old.magicItems = [];
+
+		const imported = gunzipSheet(gzipSheet(old));
+		expect(imported.weaponsAndCantrips).toHaveLength(WEAPON_CANTRIP_ROWS);
+		expect(imported.spells).toHaveLength(SPELL_ROWS);
+		expect(imported.magicItems).toHaveLength(MAGIC_ITEM_ROWS);
+		// ...and the old entries survived the trip.
+		expect(imported.weaponsAndCantrips[0].name).toBe('Longbow');
+		expect(imported.spells[0].name).toBe("Hunter's Mark");
+		expect(imported.spells[1].name).toBe('');
+		expect(imported.magicItems[0]).toEqual({ attuned: false, name: '' });
+	});
+
+	it('does the same for a legacy plain-JSON export', () => {
+		const old = filledSheet();
+		old.spells = [];
+		const imported = gunzipSheet(new TextEncoder().encode(JSON.stringify(old)));
+		expect(imported.spells).toHaveLength(SPELL_ROWS);
+		expect(imported.weaponsAndCantrips).toHaveLength(WEAPON_CANTRIP_ROWS);
 	});
 });

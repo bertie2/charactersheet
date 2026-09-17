@@ -1,7 +1,6 @@
 <script lang="ts">
 	import Input from './Input.svelte';
-	import { createEmptyWeaponCantrip, type CharacterSheet } from './types';
-	import { Minus, Plus } from '@lucide/svelte';
+	import { type CharacterSheet } from './types';
 	import type { Writable } from 'svelte/store';
 
 	export let characterSheet: Writable<CharacterSheet>;
@@ -788,10 +787,12 @@
 		fontSize={20}
 	/>
 
-	<!-- Weapons and Cantrips -->
+	<!-- Weapons and Cantrips — every printed row is drawn up front -->
 	{#each $characterSheet.weaponsAndCantrips as weaponCantrip, index}
 		<Input
 			bind:value={$characterSheet.weaponsAndCantrips[index].name}
+			name="weapon-{index + 1}-name"
+			label="Weapon {index + 1} name"
 			width={133}
 			height={18}
 			x={295}
@@ -823,29 +824,6 @@
 			fontSize={10}
 		/>
 	{/each}
-	<button
-		class="sheet-btn sheet-btn-add"
-		title="Add weapon"
-		aria-label="Add weapon"
-		style="top: {25.5 + 2.495 * $characterSheet.weaponsAndCantrips.length}cqh; left: 30cqh;"
-		onclick={() =>
-			($characterSheet.weaponsAndCantrips = [
-				...$characterSheet.weaponsAndCantrips,
-				createEmptyWeaponCantrip()
-			])}
-	>
-		<Plus class="sheet-btn-icon" />
-	</button>
-	<button
-		class="sheet-btn sheet-btn-remove"
-		title="Remove weapon"
-		aria-label="Remove weapon"
-		style="top: {25.5 + 2.495 * $characterSheet.weaponsAndCantrips.length}cqh; left: 33.3cqh;"
-		onclick={() =>
-			($characterSheet.weaponsAndCantrips = [...$characterSheet.weaponsAndCantrips.slice(0, -1)])}
-	>
-		<Minus class="sheet-btn-icon" />
-	</button>
 
 	<!-- Class Features -->
 	<Input
