@@ -297,13 +297,13 @@
 						newSheet();
 						menuOpen = false;
 					}}
-					class="mobile-action"
+					class="mobile-action btn-leather"
 				>
 					<Plus class="h-4 w-4" />
 					New character
 				</button>
 
-				<button onclick={() => (loadOpen = !loadOpen)} class="mobile-action">
+				<button onclick={() => (loadOpen = !loadOpen)} class="mobile-action btn-leather">
 					<FolderOpen class="h-4 w-4" />
 					Load
 					<ChevronDown
@@ -323,7 +323,7 @@
 						saveSheet();
 						menuOpen = false;
 					}}
-					class="mobile-action mobile-action-primary"
+					class="mobile-action btn-brass"
 				>
 					<Save class="h-4 w-4" />
 					Save
@@ -334,7 +334,7 @@
 						exportSheet();
 						menuOpen = false;
 					}}
-					class="mobile-action"
+					class="mobile-action btn-leather"
 				>
 					<FileDown class="h-4 w-4" />
 					Export
@@ -345,7 +345,7 @@
 						importSheet();
 						menuOpen = false;
 					}}
-					class="mobile-action"
+					class="mobile-action btn-leather"
 				>
 					<FileUp class="h-4 w-4" />
 					Import
@@ -356,7 +356,7 @@
 						qrExportOpen = true;
 						menuOpen = false;
 					}}
-					class="mobile-action"
+					class="mobile-action btn-leather"
 				>
 					<QrCode class="h-4 w-4" />
 					QR export
@@ -367,7 +367,7 @@
 						qrImportOpen = true;
 						menuOpen = false;
 					}}
-					class="mobile-action"
+					class="mobile-action btn-leather"
 				>
 					<ScanLine class="h-4 w-4" />
 					QR import
@@ -399,42 +399,20 @@
 {/if}
 
 <style>
+	/*
+	 * Layout only — the wood face, brass rim, hover and press shading all come
+	 * from the shared `.btn-leather` / `.btn-brass` recipe in layout.css. These
+	 * rules are unlayered, so they beat that layer for the properties they set:
+	 * keep colour and shadow out of here or the recipe stops applying.
+	 */
 	.mobile-action {
 		display: flex;
 		align-items: center;
 		gap: 0.75rem;
 		width: 100%;
 		padding: 0.65rem 0.75rem;
-		border: 1px solid #241406;
 		border-radius: 3px;
 		font-size: 0.875rem;
-		font-weight: 500;
-		color: #f8eed6;
 		text-align: left;
-		background-image: linear-gradient(180deg, #5c371b 0%, #43290f 55%, #2f1c0b 100%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 219, 165, 0.18),
-			0 2px 0 #140b03;
-		transition:
-			background-image 150ms ease-out,
-			color 150ms ease-out;
-	}
-	.mobile-action:hover {
-		background-image: linear-gradient(180deg, #7d4f2a 0%, #5a3417 55%, #3f2410 100%);
-		color: #fdf8ec;
-	}
-	.mobile-action-primary {
-		color: #140b03;
-		font-weight: 700;
-		border-color: #6f521b;
-		background-image: linear-gradient(180deg, #fbf0cf 0%, #eacd7f 32%, #bd9038 62%, #8f6a23 100%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.7),
-			inset 0 -2px 4px rgba(78, 50, 8, 0.4),
-			0 2px 0 #55400f;
-	}
-	.mobile-action-primary:hover {
-		background-image: linear-gradient(180deg, #fff8e2 0%, #f2d891 32%, #c99c3f 62%, #96702a 100%);
-		color: #140b03;
 	}
 </style>

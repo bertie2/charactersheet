@@ -285,17 +285,22 @@
 	<div
 		class="wood absolute right-3 bottom-3 z-20 flex items-center gap-0.5 rounded-md border border-wood-900 p-1 shadow-[inset_0_1px_0_rgba(216,174,82,0.28),0_10px_22px_-10px_rgba(0,0,0,0.85)]"
 	>
-		<button onclick={zoomOut} title="Zoom out" aria-label="Zoom out" class="zoom-btn">
+		<button onclick={zoomOut} title="Zoom out" aria-label="Zoom out" class="zoom-btn btn-leather">
 			<ZoomOut class="h-4 w-4" />
 		</button>
 		<span class="min-w-11 px-1 text-center text-xs font-semibold text-parchment-200 tabular-nums"
 			>{Math.round(scale * 100)}%</span
 		>
-		<button onclick={zoomIn} title="Zoom in" aria-label="Zoom in" class="zoom-btn">
+		<button onclick={zoomIn} title="Zoom in" aria-label="Zoom in" class="zoom-btn btn-leather">
 			<ZoomIn class="h-4 w-4" />
 		</button>
 		<div class="mx-0.5 h-4 w-px bg-wood-900 shadow-[1px_0_0_rgba(216,174,82,0.18)]"></div>
-		<button onclick={resetView} title="Reset view" aria-label="Reset view" class="zoom-btn">
+		<button
+			onclick={resetView}
+			title="Reset view"
+			aria-label="Reset view"
+			class="zoom-btn btn-leather"
+		>
 			<Maximize2 class="h-4 w-4" />
 		</button>
 	</div>
@@ -315,7 +320,11 @@
 		-webkit-user-select: none;
 	}
 
-	/* Zoom controls read as brass studs set into the timber rail */
+	/*
+	 * Keys set into the timber rail. Sizing/layout only — the wood face, brass
+	 * rim and the press-in shading come from `.btn-leather` in layout.css, which
+	 * is a layer below these rules, so don't set colour or shadow here.
+	 */
 	.zoom-btn {
 		display: inline-flex;
 		align-items: center;
@@ -323,20 +332,9 @@
 		width: 2rem;
 		height: 2rem;
 		border-radius: 3px;
-		color: var(--color-parchment-300);
-		transition:
-			background-color 140ms ease-out,
-			color 140ms ease-out;
-	}
-	.zoom-btn:hover {
-		background-color: rgba(216, 174, 82, 0.18);
-		color: var(--color-parchment-50);
-	}
-	.zoom-btn:active {
-		background-color: rgba(216, 174, 82, 0.28);
 	}
 	.zoom-btn:focus-visible {
-		outline: none;
-		box-shadow: 0 0 0 2px rgba(216, 174, 82, 0.65);
+		outline: 2px solid var(--color-brass-300);
+		outline-offset: 1px;
 	}
 </style>

@@ -93,6 +93,8 @@
 	 */
 	--tex-wood: url('/wood.svg');
 	--wood-tile: 768px 1440px;
+	/* a coarser cut of the same board for small faces (published by the script) */
+	--wood-tile-btn: 1152px 2160px;
 
 	/*
 	 * In-sheet values are sized from the artwork's design grid (see
@@ -171,14 +173,16 @@ body {
 	border-radius: 999px;
 }
 
-/* Smooth transitions for interactive furniture */
+/* Smooth transitions for interactive furniture. `background-position` is in the
+ * list so the plank under a wood button can shift as the face is pressed in. */
 button,
 a,
 input,
 textarea,
 select {
 	transition-property:
-		color, background-color, border-color, box-shadow, transform, opacity, filter;
+		color, background-color, border-color, box-shadow, transform, opacity, filter,
+		background-position;
 	transition-duration: 150ms;
 	transition-timing-function: ease-out;
 }
@@ -368,82 +372,121 @@ select {
 			0 1.4cqh 2.6cqh rgba(0, 0, 0, 0.5);
 	}
 
-	/* Brass fitting — primary action */
-	.btn-brass {
-		color: var(--color-wood-900);
-		border: 1px solid #6f521b;
-		background-image: linear-gradient(180deg, #fbf0cf 0%, #eacd7f 32%, #bd9038 62%, #8f6a23 100%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.7),
-			inset 0 -2px 4px rgba(78, 50, 8, 0.4),
-			0 2px 0 #55400f,
-			0 8px 18px -8px rgba(0, 0, 0, 0.75);
-		text-shadow: 0 1px 0 rgba(255, 255, 255, 0.35);
-	}
-	.btn-brass:hover {
-		filter: brightness(1.07);
-	}
-	.btn-brass:active {
-		transform: translateY(1px);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.5),
-			inset 0 2px 5px rgba(78, 50, 8, 0.45),
-			0 1px 0 #55400f,
-			0 4px 10px -6px rgba(0, 0, 0, 0.8);
-	}
-	.btn-brass:focus-visible {
-		outline: none;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 255, 255, 0.6),
-			0 0 0 3px rgba(233, 203, 125, 0.55),
-			0 2px 0 #55400f;
-	}
-
-	/* Tooled leather — supporting action */
-	.btn-leather {
-		color: var(--color-parchment-100);
-		border: 1px solid #241406;
-		background-image: linear-gradient(180deg, #6b4324 0%, #4a2b13 55%, #351f0d 100%);
-		box-shadow:
-			inset 0 1px 0 rgba(255, 219, 165, 0.22),
-			inset 0 -2px 5px rgba(0, 0, 0, 0.4),
-			0 2px 0 #150c04,
-			0 8px 16px -9px rgba(0, 0, 0, 0.8);
-	}
-	.btn-leather:hover {
-		background-image: linear-gradient(180deg, #7d4f2a 0%, #5a3417 55%, #3f2410 100%);
-		color: var(--color-parchment-50);
-	}
-	.btn-leather:active {
-		transform: translateY(1px);
-		box-shadow:
-			inset 0 2px 6px rgba(0, 0, 0, 0.5),
-			0 1px 0 #150c04;
-	}
-	.btn-leather:focus-visible {
-		outline: none;
-		box-shadow:
-			inset 0 1px 0 rgba(255, 219, 165, 0.22),
-			0 0 0 3px rgba(216, 174, 82, 0.45),
-			0 2px 0 #150c04;
-	}
-
-	/* Blackened iron — destructive actions */
+	/*
+	 * Wood + brass controls.
+	 *
+	 * Every button is a slice of the same stained oak set inside a brass rim, so
+	 * they sit in the same material world as the desk and the sheet frames. The
+	 * three actions are told apart by their fittings, not by their body:
+	 *   .btn-brass   primary   — gilded: gold lettering and a warm inner glow
+	 *   .btn-leather supporting — parchment lettering, a plain recessed board
+	 *   .btn-iron    dangerous — parchment lettering, brass that arms to a wax
+	 *                            seal when you go near it
+	 *
+	 * Hover and press both push the face IN — a shadow under the top lip — rather
+	 * than lifting it, so the board reads as a physical key being depressed.
+	 */
+	.btn-brass,
+	.btn-leather,
 	.btn-iron {
-		color: var(--color-parchment-200);
-		border: 1px solid #241406;
-		background-image: linear-gradient(180deg, #4c4038 0%, #332a23 55%, #1f1915 100%);
+		position: relative;
+		color: var(--btn-ink);
+		border: 1px solid var(--btn-frame);
+		background-color: #3a2110;
+		background-image: var(--tex-wood);
+		background-repeat: repeat;
+		background-position: 0 -9px;
+		background-size: var(--wood-tile-btn);
 		box-shadow:
-			inset 0 1px 0 rgba(255, 240, 214, 0.16),
-			0 2px 0 #100b06;
+			/* the dark seam where the board sits recessed inside its rim */
+			inset 0 0 0 1px rgba(20, 11, 3, 0.6),
+			/* gold catch-light along the top of the board, shade at its foot */ inset 0 1px 0
+				var(--btn-gold),
+			inset 0 -3px 6px -2px rgba(0, 0, 0, 0.5),
+			/* the fitting's own sheen: gilt for primary, plain recess for the rest */ inset 0 0 15px
+				var(--btn-glow),
+			/* the rim standing proud of the surface it is set into */ 0 1px 0 rgba(251, 240, 207, 0.16),
+			0 3px 8px -3px rgba(0, 0, 0, 0.7);
+		text-shadow: 0 1px 0 rgba(0, 0, 0, 0.6);
 	}
+
+	/* Pressing the face in: the top lip shades the board and the rim goes gold */
+	.btn-brass:hover,
+	.btn-leather:hover,
 	.btn-iron:hover {
-		background-image: linear-gradient(180deg, #6a2f21 0%, #52241a 55%, #33150f 100%);
-		color: #f6ddd3;
+		color: var(--btn-ink-lit);
+		border-color: var(--btn-frame-lit);
+		background-position: 0 -8px;
+		box-shadow:
+			inset 0 0 0 1px rgba(20, 11, 3, 0.6),
+			inset 0 2px 5px rgba(0, 0, 0, 0.5),
+			inset 0 -1px 0 var(--btn-gold),
+			inset 0 0 18px var(--btn-glow),
+			0 0 0 1px var(--btn-rim-light),
+			0 2px 6px -3px rgba(0, 0, 0, 0.65);
 	}
+
+	/* Fully depressed: the rim is flush with the wood, the lip shadows harder and
+	 * the cast shadow collapses because there is no longer a gap to cast across */
+	.btn-brass:active,
+	.btn-leather:active,
+	.btn-iron:active {
+		transform: translateY(1px);
+		border-color: var(--btn-frame);
+		background-position: 0 -7px;
+		filter: brightness(0.93);
+		box-shadow:
+			inset 0 0 0 1px rgba(20, 11, 3, 0.7),
+			inset 0 3px 7px rgba(0, 0, 0, 0.6),
+			inset 0 -1px 0 rgba(251, 240, 207, 0.1),
+			0 1px 1px rgba(0, 0, 0, 0.5);
+	}
+
+	.btn-brass:focus-visible,
+	.btn-leather:focus-visible,
 	.btn-iron:focus-visible {
-		outline: none;
-		box-shadow: 0 0 0 3px rgba(196, 85, 58, 0.5);
+		outline: 2px solid var(--color-brass-300);
+		outline-offset: 2px;
+	}
+
+	/* Gilded: gold lettering and a warm glow inside the rim */
+	.btn-brass {
+		--btn-frame: #a9791f;
+		--btn-frame-lit: #e9cb7d;
+		--btn-rim-light: rgba(233, 203, 125, 0.4);
+		--btn-ink: var(--color-brass-200);
+		--btn-ink-lit: var(--color-brass-100);
+		--btn-gold: rgba(251, 240, 207, 0.32);
+		--btn-glow: rgba(216, 174, 82, 0.26);
+	}
+
+	/* Supporting: the plainest board in the set */
+	.btn-leather {
+		--btn-frame: #7a5c22;
+		--btn-frame-lit: #bd9038;
+		--btn-rim-light: rgba(216, 174, 82, 0.3);
+		--btn-ink: var(--color-parchment-100);
+		--btn-ink-lit: var(--color-parchment-50);
+		--btn-gold: rgba(251, 240, 207, 0.18);
+		--btn-glow: rgba(0, 0, 0, 0.28);
+	}
+
+	/* Destructive: brass until you reach for it, then wax seal */
+	.btn-iron {
+		--btn-frame: #7a5c22;
+		--btn-frame-lit: #bd9038;
+		--btn-rim-light: rgba(216, 174, 82, 0.3);
+		--btn-ink: var(--color-parchment-200);
+		--btn-ink-lit: var(--color-parchment-50);
+		--btn-gold: rgba(251, 240, 207, 0.14);
+		--btn-glow: rgba(0, 0, 0, 0.32);
+	}
+	.btn-iron:hover,
+	.btn-iron:active {
+		--btn-frame-lit: #c4553a;
+		--btn-rim-light: rgba(196, 85, 58, 0.45);
+		--btn-ink-lit: #f6ddd3;
+		--btn-glow: rgba(165, 60, 35, 0.45);
 	}
 
 	/* A field chiselled into the wood */

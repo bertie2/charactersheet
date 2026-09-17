@@ -314,21 +314,28 @@ mkdirSync(dirname(out), { recursive: true });
 writeFileSync(out, svg);
 
 /*
- * The CSS paints the tile at exactly these pixel dimensions, so the token and
- * the geometry have to agree or the grain gets squashed. Publish the value here
- * instead of trusting a human to remember.
+ * The CSS paints the tile at exactly these pixel dimensions, so the tokens and
+ * the geometry have to agree or the grain gets squashed. Publish them here
+ * instead of trusting a human to remember. Buttons use a coarser cut of the same
+ * tile (`--wood-tile-btn`) so the grain still reads on a 36px face.
  */
+const BTN_SCALE = 1.5;
 const cssPath = resolve(here, '../src/routes/layout.css');
-const css = readFileSync(cssPath, 'utf8');
-if (!/--wood-tile:\s*[^;]+;/.test(css)) {
-	throw new Error(`no --wood-tile declaration found in ${cssPath}`);
+let css = readFileSync(cssPath, 'utf8');
+const tokens = {
+	'--wood-tile': `${W}px ${H}px`,
+	'--wood-tile-btn': `${n(W * BTN_SCALE)}px ${n(H * BTN_SCALE)}px`
+};
+for (const [name, value] of Object.entries(tokens)) {
+	const pattern = new RegExp(`(${name}:\\s*)[^;]+;`);
+	if (!pattern.test(css)) throw new Error(`no ${name} declaration found in ${cssPath}`);
+	const next = css.replace(pattern, `$1${value};`);
+	if (next !== css) {
+		css = next;
+		console.log(`layout.css: ${name} -> ${value}`);
+	}
 }
-const tile = `${W}px ${H}px`;
-const synced = css.replace(/--wood-tile:\s*[^;]+;/, `--wood-tile: ${tile};`);
-if (synced !== css) {
-	writeFileSync(cssPath, synced);
-	console.log(`layout.css: --wood-tile -> ${tile}`);
-}
+writeFileSync(cssPath, css);
 
 console.log(
 	`wrote ${out} — ${W}x${H}px (${BANDS} staggered bands x ${PLANKS} boards of ${PH}px), ${(svg.length / 1024).toFixed(1)}KB`
