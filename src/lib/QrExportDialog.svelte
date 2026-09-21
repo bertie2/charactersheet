@@ -86,28 +86,30 @@
 		type="button"
 		tabindex="-1"
 		aria-hidden="true"
-		class="absolute inset-0 cursor-default border-0 bg-black/70 p-0 backdrop-blur-sm"
+		class="absolute inset-0 cursor-default border-0 bg-black/75 p-0 backdrop-blur-sm"
 		onclick={onClose}
 	></button>
 	<div
-		class="relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-2xl border border-white/10 bg-stone-900/95 p-5 shadow-2xl shadow-black/60 sm:max-w-xl lg:max-w-3xl"
+		class="parchment relative max-h-[90dvh] w-full max-w-md overflow-y-auto rounded-sm p-5 shadow-[0_0_0_3px_#43290f,0_0_0_4px_rgba(216,174,82,0.22),0_30px_60px_-20px_rgba(0,0,0,0.95)] sm:max-w-xl lg:max-w-3xl"
 	>
 		<div class="mb-4 flex items-center justify-between">
-			<h2 class="flex items-center gap-2 font-display text-lg font-semibold text-stone-100">
-				<QrCode class="h-5 w-5 text-amber-400" />
+			<h2 class="flex items-center gap-2 font-display text-lg font-semibold text-ink-900">
+				<QrCode class="h-5 w-5 text-brass-600" />
 				Export as QR codes
 			</h2>
 			<button
 				onclick={onClose}
 				title="Close"
 				aria-label="Close"
-				class="rounded-lg p-1.5 text-stone-400 transition hover:bg-white/10 hover:text-white"
+				class="rounded-sm p-1.5 text-ink-500 transition hover:bg-ink-700/10 hover:text-ink-900"
 			>
 				<X class="h-5 w-5" />
 			</button>
 		</div>
 
-		<div class="relative flex items-center justify-center rounded-xl bg-white p-3">
+		<div
+			class="relative flex items-center justify-center rounded-sm bg-white p-3 shadow-[0_0_0_1px_rgba(90,56,20,0.35),inset_0_0_12px_rgba(90,56,20,0.12)]"
+		>
 			<canvas
 				bind:this={canvasEl}
 				class="block h-auto w-full max-w-[280px] sm:max-w-[480px] lg:max-w-[640px]"
@@ -115,7 +117,7 @@
 			></canvas>
 			{#if chunks.length === 0 || !hasRendered}
 				<div
-					class="absolute inset-0 z-10 flex items-center justify-center rounded-xl bg-white text-sm text-stone-500"
+					class="absolute inset-0 z-10 flex items-center justify-center rounded-sm bg-white text-sm text-ink-500"
 				>
 					Preparing QR codes…
 				</div>
@@ -123,7 +125,7 @@
 		</div>
 
 		{#if chunks.length > 0 && hasRendered}
-			<p class="mt-3 text-center text-sm font-medium text-stone-300">
+			<p class="mt-3 text-center text-sm font-semibold tracking-wide text-ink-700 tabular-nums">
 				QR {current + 1} of {chunks.length}
 			</p>
 
@@ -133,7 +135,7 @@
 					disabled={current === 0}
 					title="Previous QR code"
 					aria-label="Previous QR code"
-					class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-stone-200 transition hover:bg-white/10 disabled:opacity-30"
+					class="btn-leather inline-flex h-9 w-9 items-center justify-center rounded-sm disabled:opacity-40"
 				>
 					<ChevronLeft class="h-5 w-5" />
 				</button>
@@ -142,8 +144,8 @@
 					{#each chunks as chunk, i (chunk)}
 						<span
 							class="h-2 w-2 rounded-full transition {i === current
-								? 'bg-amber-400'
-								: 'bg-white/20'}"
+								? 'bg-brass-500'
+								: 'bg-ink-700/25'}"
 						></span>
 					{/each}
 				</div>
@@ -153,7 +155,7 @@
 					disabled={current === chunks.length - 1}
 					title="Next QR code"
 					aria-label="Next QR code"
-					class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/10 bg-white/5 text-stone-200 transition hover:bg-white/10 disabled:opacity-30"
+					class="btn-leather inline-flex h-9 w-9 items-center justify-center rounded-sm disabled:opacity-40"
 				>
 					<ChevronRight class="h-5 w-5" />
 				</button>
@@ -161,10 +163,10 @@
 		{/if}
 
 		{#if renderError}
-			<p class="mt-3 text-center text-xs text-red-300">{renderError}</p>
+			<p class="mt-3 text-center text-xs font-semibold text-seal-600">{renderError}</p>
 		{/if}
 
-		<p class="mt-4 text-center text-xs leading-relaxed text-stone-500">
+		<p class="mt-4 text-center text-xs leading-relaxed text-ink-500">
 			On the receiving device, open the QR importer and scan each code in order to transfer this
 			character without a server. Fewer, denser codes are used on high-resolution screens; smaller
 			screens get more, easier-to-scan codes.

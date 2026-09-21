@@ -283,33 +283,23 @@
 
 	<!-- Zoom controls -->
 	<div
-		class="absolute right-3 bottom-3 z-20 flex items-center gap-0.5 rounded-full border border-white/10 bg-stone-900/80 p-1 shadow-lg shadow-black/30 backdrop-blur"
+		class="wood absolute right-3 bottom-3 z-20 flex items-center gap-0.5 rounded-md border border-wood-900 p-1 shadow-[inset_0_1px_0_rgba(216,174,82,0.28),0_10px_22px_-10px_rgba(0,0,0,0.85)]"
 	>
-		<button
-			onclick={zoomOut}
-			title="Zoom out"
-			aria-label="Zoom out"
-			class="inline-flex h-8 w-8 items-center justify-center rounded-full text-stone-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
-		>
+		<button onclick={zoomOut} title="Zoom out" aria-label="Zoom out" class="zoom-btn btn-leather">
 			<ZoomOut class="h-4 w-4" />
 		</button>
-		<span class="min-w-11 px-1 text-center text-xs font-medium text-stone-300 tabular-nums"
+		<span class="min-w-11 px-1 text-center text-xs font-semibold text-parchment-200 tabular-nums"
 			>{Math.round(scale * 100)}%</span
 		>
-		<button
-			onclick={zoomIn}
-			title="Zoom in"
-			aria-label="Zoom in"
-			class="inline-flex h-8 w-8 items-center justify-center rounded-full text-stone-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
-		>
+		<button onclick={zoomIn} title="Zoom in" aria-label="Zoom in" class="zoom-btn btn-leather">
 			<ZoomIn class="h-4 w-4" />
 		</button>
-		<div class="mx-0.5 h-4 w-px bg-white/10"></div>
+		<div class="mx-0.5 h-4 w-px bg-wood-900 shadow-[1px_0_0_rgba(216,174,82,0.18)]"></div>
 		<button
 			onclick={resetView}
 			title="Reset view"
 			aria-label="Reset view"
-			class="inline-flex h-8 w-8 items-center justify-center rounded-full text-stone-300 transition hover:bg-white/10 hover:text-white focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+			class="zoom-btn btn-leather"
 		>
 			<Maximize2 class="h-4 w-4" />
 		</button>
@@ -317,7 +307,7 @@
 
 	{#if showHint}
 		<div
-			class="pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-full border border-white/10 bg-stone-900/80 px-4 py-1.5 text-xs whitespace-nowrap text-stone-400 backdrop-blur"
+			class="parchment pointer-events-none absolute bottom-4 left-1/2 z-20 -translate-x-1/2 rounded-sm px-4 py-1.5 text-xs font-semibold tracking-wide whitespace-nowrap text-ink-700 shadow-[0_0_0_3px_#43290f,0_0_0_4px_rgba(216,174,82,0.22),0_12px_22px_-12px_rgba(0,0,0,0.85)]"
 		>
 			Scroll to zoom · Middle-drag or swipe to pan
 		</div>
@@ -328,5 +318,23 @@
 	.panzoom-root {
 		user-select: none;
 		-webkit-user-select: none;
+	}
+
+	/*
+	 * Keys set into the timber rail. Sizing/layout only — the wood face, brass
+	 * rim and the press-in shading come from `.btn-leather` in layout.css, which
+	 * is a layer below these rules, so don't set colour or shadow here.
+	 */
+	.zoom-btn {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		width: 2rem;
+		height: 2rem;
+		border-radius: 3px;
+	}
+	.zoom-btn:focus-visible {
+		outline: 2px solid var(--color-brass-300);
+		outline-offset: 1px;
 	}
 </style>

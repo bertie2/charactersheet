@@ -11,37 +11,71 @@
 	export let centerText: boolean = false;
 	/** Optional field id — emitted as `name` + `data-testid` for styling/tests. */
 	export let name: string | undefined = undefined;
+	/** Optional accessible name, for fields the printed sheet labels visually. */
+	export let label: string | undefined = undefined;
+	/**
+	 * Owns the checked state when supplied, instead of `bind:checked`: the box
+	 * stays a dumb view of `checked` and reports intended flips through here. Used
+	 * by the spell-slot tally, where the tick count (not a lone boolean) is the
+	 * value that actually changes.
+	 */
+	export let onToggle: ((next: boolean) => void) | undefined = undefined;
+
+	/**
+	 * Field sizes arrive in the artwork's design units (1000 = sheet height) and
+	 * are rendered in container units. Alegreya Sans sets ~5% narrower than the
+	 * serif it replaced, so `--sheet-font-scale` buys back that height without
+	 * pushing any value past the printed box it sits in — see `layout.css`.
+	 */
+	const sheetSize = (units: number) => `calc(${units / 10.0}cqh * var(--sheet-font-scale, 1))`;
 </script>
 
 {#if signNumber && type === 'number' && typeof value === 'number' && value > 0}
 	<p
+		class="sheet-sign"
 		style="position: absolute; top: {y / 10.0}cqh; left: {(x - width * 0.2) /
-			10.0}cqh; width: {width / 10.0}cqh; height: {height / 10.0}cqh; font-size: {fontSize /
-			10.0}cqh; line-height: {height /
+			10.0}cqh; width: {width / 10.0}cqh; height: {height / 10.0}cqh; font-size: {sheetSize(
+			fontSize
+		)}; line-height: {height /
 			10.0}cqh; display: flex; align-items: center; justify-content: center;"
 	>
 		+
 	</p>
 {/if}
-{#if type === 'checkbox'}
-	<input
-		type="checkbox"
-		class="input sheet-checkbox"
-		{name}
-		data-testid={name}
-		bind:checked
-		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
-			10.0}cqh; height: {height / 10.0}cqh;"
-	/>
-{:else if type === 'textArea'}
+{#if type === 'checkbox'}{#if onToggle}
+		<input
+			type="checkbox"
+			class="input sheet-checkbox"
+			{name}
+			data-testid={name}
+			aria-label={label}
+			{checked}
+			onclick={() => onToggle(!checked)}
+			style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
+				10.0}cqh; height: {height / 10.0}cqh;"
+		/>
+	{:else}
+		<input
+			type="checkbox"
+			class="input sheet-checkbox"
+			{name}
+			data-testid={name}
+			aria-label={label}
+			bind:checked
+			style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
+				10.0}cqh; height: {height / 10.0}cqh;"
+		/>
+	{/if}{:else if type === 'textArea'}
 	<textarea
 		class="input sheet-textarea"
 		{name}
 		data-testid={name}
+		aria-label={label}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {x / 10.0}cqh; width: {width /
-			10.0}cqh; height: {height / 10.0}cqh; font-size: {fontSize /
-			10.0}cqh; line-height: {fontSize / 10.0}cqh;"
+			10.0}cqh; height: {height / 10.0}cqh; font-size: {sheetSize(
+			fontSize
+		)}; line-height: {sheetSize(fontSize)};"
 	></textarea>
 {:else}
 	<input
@@ -49,25 +83,33 @@
 		class="input sheet-field {centerText ? 'text-center' : ''}"
 		{name}
 		data-testid={name}
+		aria-label={label}
 		bind:value
 		style="position: absolute; top: {y / 10.0}cqh; left: {(signNumber &&
 		type === 'number' &&
 		typeof value === 'number' &&
 		value > 0
 			? x + width * 0.1
-			: x) / 10.0}cqh; width: {width / 10.0}cqh; height: {height / 10.0}cqh; font-size: {fontSize /
-			10.0}cqh; line-height: {height / 10.0}cqh;"
+			: x) / 10.0}cqh; width: {width / 10.0}cqh; height: {height / 10.0}cqh; font-size: {sheetSize(
+			fontSize
+		)}; line-height: {height / 10.0}cqh;"
 	/>
 {/if}
 
 <style>
-	/* Shared reset for in-sheet fields */
+	/* Shared reset for in-sheet fields — ink on parchment */
 	.input {
 		background-color: transparent;
 		border: none;
 		padding: 0;
 		margin: 0;
-		color: #1c1917;
+		/* A low-contrast humanist sans with a tall x-height: the printed artwork
+		   underneath is noisy paper, and this stays legible at ~1cqh sizes where
+		   a high-contrast book serif loses its hairlines. */
+		font-family: var(--font-sheet);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums lining-nums;
+		color: #2a1a0a;
 		border-radius: 0;
 		box-shadow: none;
 		outline: none;
@@ -77,26 +119,35 @@
 		box-shadow: none;
 	}
 
-	/* Text & number fields: subtle hover, clear focus */
+	/* The "+" prefix printed beside signed modifiers */
+	.sheet-sign {
+		margin: 0;
+		font-family: var(--font-sheet);
+		font-weight: 500;
+		font-variant-numeric: tabular-nums lining-nums;
+		color: #2a1a0a;
+	}
+
+	/* Text & number fields: a faint stain on hover, a brass-inked focus */
 	.sheet-field,
 	.sheet-textarea {
-		caret-color: #b45309;
+		caret-color: #8f6a23;
 	}
 
 	.sheet-field:hover,
 	.sheet-textarea:hover {
-		background-color: rgba(217, 119, 6, 0.08);
+		background-color: rgba(150, 112, 38, 0.1);
 	}
 
 	.sheet-field:focus,
 	.sheet-textarea:focus {
-		background-color: rgba(245, 158, 11, 0.14);
-		box-shadow: 0 0 0 0.09cqh rgba(217, 119, 6, 0.65);
+		background-color: rgba(216, 174, 82, 0.2);
+		box-shadow: 0 0 0 0.09cqh rgba(150, 112, 38, 0.8);
 		border-radius: 0.15cqh;
 	}
 
 	textarea.sheet-textarea {
-		background-color: rgba(0, 0, 0, 0.03);
+		background-color: rgba(120, 82, 34, 0.05);
 		resize: none;
 	}
 
@@ -104,8 +155,8 @@
 	.sheet-checkbox {
 		-webkit-appearance: none;
 		appearance: none;
-		background-color: rgba(255, 255, 255, 0.25);
-		border: 0.09cqh solid #57534e;
+		background-color: rgba(255, 255, 255, 0.45);
+		border: 0.09cqh solid #7c4c27;
 		border-radius: 0.18cqh;
 		display: inline-block;
 		cursor: pointer;
@@ -113,16 +164,16 @@
 	}
 
 	.sheet-checkbox:checked {
-		background-color: #1c1917;
-		border-color: #1c1917;
-		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 5.5 4 8 9 2.5' fill='none' stroke='%23fbbf24' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+		background-color: #33210f;
+		border-color: #241708;
+		background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 10 10'%3E%3Cpath d='M1 5.5 4 8 9 2.5' fill='none' stroke='%23e9cb7d' stroke-width='1.6' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
 		background-size: 80% 80%;
 		background-position: center;
 		background-repeat: no-repeat;
 	}
 
 	.sheet-checkbox:hover {
-		border-color: #b45309;
+		border-color: #967026;
 	}
 
 	/* Hide number spinners */

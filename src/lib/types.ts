@@ -173,6 +173,50 @@ export function createEmptyMagicItemAttunment(): MagicItemAtunment {
 	};
 }
 
+/*
+ * How many rows each list prints on the sheet. Every row is drawn ahead of time
+ * (there are no add/remove buttons), so these counts decide how many inputs sit
+ * on the artwork. Measured from the printed rules: the page 1 weapons box has 6
+ * rows, page 2 has 30 spell rows (rules at a constant 25.1 unit pitch from
+ * y 248.8 down to 977.2) and 3 magic item rows.
+ */
+export const WEAPON_CANTRIP_ROWS = 6;
+export const SPELL_ROWS = 30;
+export const MAGIC_ITEM_ROWS = 3;
+
+/**
+ * Tops a row list up to `count`, leaving anything already on the sheet alone.
+ * Lists are never trimmed: a sheet written before the rows were pre-populated
+ * (or one that genuinely holds more entries) keeps every value it has.
+ */
+function withRows<T>(rows: T[] | undefined, count: number, create: () => T): T[] {
+	const existing = Array.isArray(rows) ? rows : [];
+	if (existing.length >= count) return existing;
+	return [...existing, ...Array.from({ length: count - existing.length }, () => create())];
+}
+
+/**
+ * Brings a sheet loaded from an older version up to date with the current shape.
+ *
+ * The only thing that has changed is that the weapon, spell and magic item lists
+ * arrive pre-filled with empty rows, so sheets saved or exported before that are
+ * padded here. Everything else is passed through untouched, which keeps old
+ * localStorage entries, `*.json.gz` exports and QR payloads working.
+ */
+export function normalizeSheet(sheet: CharacterSheet | null | undefined): CharacterSheet {
+	if (!sheet || typeof sheet !== 'object') return createEmptyCharacterSheet();
+	return {
+		...sheet,
+		weaponsAndCantrips: withRows(
+			sheet.weaponsAndCantrips,
+			WEAPON_CANTRIP_ROWS,
+			createEmptyWeaponCantrip
+		),
+		spells: withRows(sheet.spells, SPELL_ROWS, createEmptySpell),
+		magicItems: withRows(sheet.magicItems, MAGIC_ITEM_ROWS, createEmptyMagicItemAttunment)
+	};
+}
+
 export function createEmptyCharacterSheet(): CharacterSheet {
 	return {
 		name: '',
@@ -263,7 +307,7 @@ export function createEmptyCharacterSheet(): CharacterSheet {
 		shieldProficiency: false,
 		weaponsProficiencys: '',
 		toolsProficiencys: '',
-		weaponsAndCantrips: [],
+		weaponsAndCantrips: Array.from({ length: WEAPON_CANTRIP_ROWS }, createEmptyWeaponCantrip),
 		classFeatures1: '',
 		classFeatures2: '',
 		speciesTraits: '',
@@ -273,13 +317,13 @@ export function createEmptyCharacterSheet(): CharacterSheet {
 		spellCastingModifier: 0,
 		spellSaveDC: 0,
 		spellAttackBonus: 0,
-		spells: [],
+		spells: Array.from({ length: SPELL_ROWS }, createEmptySpell),
 		appearance: '',
 		backstory: '',
 		alignment: '',
 		languages: '',
 		equipment: '',
-		magicItems: [],
+		magicItems: Array.from({ length: MAGIC_ITEM_ROWS }, createEmptyMagicItemAttunment),
 		copperPieces: 0,
 		silverPieces: 0,
 		electrumPieces: 0,

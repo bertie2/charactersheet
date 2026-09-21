@@ -39,44 +39,53 @@
 	let savedEntries = $derived(Object.entries($saves));
 </script>
 
-<main class="relative z-10 flex min-h-dvh flex-col items-center justify-center px-4 py-14 sm:px-6">
-	<div class="w-full max-w-4xl">
+<main
+	class="relative z-10 flex min-h-dvh flex-col items-center justify-center px-3 py-10 sm:px-6 sm:py-14"
+>
+	<div class="parchment scroll-sheet w-full max-w-4xl px-5 py-10 sm:px-10 sm:py-14 lg:px-14">
 		<!-- ============ Hero ============ -->
 		<section class="text-center">
 			<div
-				class="mx-auto mb-6 inline-flex items-center gap-2 rounded-full border border-amber-500/30 bg-amber-500/10 px-4 py-1.5 text-xs font-medium tracking-widest text-amber-300 uppercase shadow-[0_0_24px_-6px_rgba(245,158,11,0.5)]"
+				class="mx-auto mb-8 inline-flex items-center gap-2 rounded-sm border border-wood-900 bg-gradient-to-b from-wood-400 to-wood-600 px-5 py-1.5 text-[0.68rem] font-medium tracking-[0.3em] text-parchment-100 uppercase shadow-[inset_0_1px_0_rgba(255,219,165,0.25),0_3px_8px_-3px_rgba(0,0,0,0.6)]"
 			>
-				<Dices class="h-4 w-4" />
+				<Dices class="h-3.5 w-3.5 text-brass-300" />
 				Dungeons &amp; Dragons 5e
 			</div>
 
 			<h1
-				class="font-display text-5xl font-bold tracking-tight text-stone-50 sm:text-6xl md:text-7xl"
+				class="engraved font-display text-5xl font-bold tracking-tight text-ink-900 sm:text-6xl md:text-7xl"
 			>
-				CharSheet
-				<span
-					class="bg-gradient-to-r from-amber-300 via-amber-400 to-orange-500 bg-clip-text text-transparent"
-					>Forge</span
-				>
+				CharSheet <span class="text-brass-600">Forge</span>
 			</h1>
 
-			<p class="mx-auto mt-5 max-w-xl text-base leading-relaxed text-stone-400 sm:text-lg">
+			<!-- Illuminated flourish -->
+			<div class="mt-6 flex items-center justify-center gap-3 text-ink-400" aria-hidden="true">
+				<span class="h-px w-16 bg-gradient-to-r from-transparent to-ink-400/80 sm:w-28"></span>
+				<svg viewBox="0 0 24 24" class="h-4 w-4 shrink-0" fill="currentColor">
+					<path d="M12 1.5 13.9 9.2 21.5 11 13.9 12.8 12 20.5 10.1 12.8 2.5 11 10.1 9.2Z" />
+				</svg>
+				<span class="h-px w-16 bg-gradient-to-l from-transparent to-ink-400/80 sm:w-28"></span>
+			</div>
+
+			<p
+				class="ink-dropcap mx-auto mt-7 max-w-xl text-left text-base leading-relaxed text-ink-700 sm:text-lg"
+			>
 				Craft and manage your adventurer's tale. Edit official-style character sheets, track spells,
-				equipment and magic items — all saved locally in your browser.
+				equipment and magic items — all kept safe on your own device.
 			</p>
 
 			<!-- Primary actions -->
-			<div class="mt-9 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
+			<div class="mt-10 flex flex-col items-center justify-center gap-3 sm:flex-row sm:gap-4">
 				<button
 					onclick={startNew}
-					class="group inline-flex w-full items-center justify-center gap-2 rounded-xl bg-gradient-to-r from-amber-400 to-orange-500 px-7 py-3.5 text-base font-semibold text-stone-950 shadow-lg shadow-amber-500/25 transition hover:shadow-amber-400/40 hover:brightness-110 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300 sm:w-auto"
+					class="btn-brass inline-flex w-full items-center justify-center gap-2 rounded-md px-7 py-3.5 text-sm font-semibold tracking-wide uppercase sm:w-auto"
 				>
 					<Wand2 class="h-5 w-5" />
 					Create New Character
 				</button>
 				<button
 					onclick={continueEditing}
-					class="inline-flex w-full items-center justify-center gap-2 rounded-xl border border-white/15 bg-white/5 px-7 py-3.5 text-base font-semibold text-stone-200 backdrop-blur transition hover:border-white/25 hover:bg-white/10 focus:outline-none focus-visible:ring-2 focus-visible:ring-white/40 sm:w-auto"
+					class="btn-leather inline-flex w-full items-center justify-center gap-2 rounded-md px-7 py-3.5 text-sm font-semibold tracking-wide uppercase sm:w-auto"
 				>
 					<BookOpen class="h-5 w-5" />
 					Continue Editing
@@ -85,52 +94,67 @@
 		</section>
 
 		<!-- ============ Saved characters ============ -->
-		<section class="mt-16">
-			<div class="mb-5 flex items-center gap-3">
-				<h2 class="text-xl font-semibold text-stone-200">Your Characters</h2>
-				<div class="h-px flex-1 bg-gradient-to-r from-white/15 to-transparent"></div>
-				<span class="text-sm text-stone-500">{savedEntries.length} saved</span>
+		<section class="mt-14">
+			<div class="mb-6 flex items-center gap-4">
+				<div class="rule-heading flex-1">
+					<h2 class="font-display text-lg font-semibold tracking-wide text-ink-800 uppercase">
+						Your Characters
+					</h2>
+				</div>
+				<span class="text-xs tracking-widest text-ink-500 uppercase"
+					>{savedEntries.length} saved</span
+				>
 			</div>
 
 			{#if savedEntries.length === 0}
 				<div
-					class="flex flex-col items-center justify-center rounded-2xl border border-dashed border-white/15 bg-white/[0.03] px-6 py-14 text-center"
+					class="flex flex-col items-center justify-center rounded-sm border-2 border-dashed border-ink-400/50 bg-ink-700/[0.035] px-6 py-14 text-center"
 				>
-					<ScrollText class="mb-4 h-12 w-12 text-stone-600" />
-					<p class="text-lg font-medium text-stone-300">No characters yet</p>
-					<p class="mt-1 max-w-sm text-sm text-stone-500">
-						Click “Create New Character” above to forge your first hero and it will appear here for
+					<ScrollText class="mb-4 h-12 w-12 text-ink-400" />
+					<p class="font-display text-lg font-semibold text-ink-800">No characters yet</p>
+					<p class="mt-2 max-w-sm text-sm leading-relaxed text-ink-600">
+						Strike “Create New Character” above to forge your first hero — they will appear here for
 						quick access.
 					</p>
 				</div>
 			{:else}
-				<ul class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-					{#each savedEntries as [name, sheet]}
+				<ul class="grid grid-cols-1 gap-5 sm:grid-cols-2">
+					{#each savedEntries as [name, sheet], i}
 						<li>
 							<div
-								class="group relative flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-gradient-to-br from-white/[0.06] to-white/[0.02] p-5 backdrop-blur transition hover:border-amber-400/40 hover:shadow-[0_8px_40px_-12px_rgba(245,158,11,0.35)]"
+								class="parchment-slip group relative flex h-full rotate-[var(--tilt)] flex-col p-5 transition duration-300 hover:rotate-0"
+								style="--tilt: {(i % 3) - 1}deg"
 							>
+								<!-- brass tack -->
+								<span
+									aria-hidden="true"
+									class="absolute -top-1.5 left-1/2 h-3 w-3 -translate-x-1/2 rounded-full border border-brass-700 bg-gradient-to-br from-brass-100 to-brass-600 shadow-[0_2px_3px_rgba(0,0,0,0.45)]"
+								></span>
+
 								<div class="flex items-start justify-between gap-3">
 									<div class="min-w-0">
-										<h3 class="truncate text-lg font-semibold text-stone-100">{name}</h3>
+										<h3 class="truncate font-display text-lg font-semibold text-ink-900">
+											{name}
+										</h3>
 										<p
-											class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-stone-400"
+											class="mt-1 flex flex-wrap items-center gap-x-2 gap-y-0.5 text-sm text-ink-600"
 										>
-											{#if sheet.class}<span class="text-amber-300/90">{sheet.class}</span>{/if}
-											{#if sheet.class && sheet.species}<span class="text-stone-600">·</span>{/if}
+											{#if sheet.class}<span class="font-medium text-ink-700">{sheet.class}</span
+												>{/if}
+											{#if sheet.class && sheet.species}<span class="text-ink-400">·</span>{/if}
 											{#if sheet.species}<span>{sheet.species}</span>{/if}
-											{#if sheet.level}<span class="text-stone-600">·</span><span
-													>Lv {sheet.level}</span
+											{#if sheet.level}<span class="text-ink-400">·</span><span
+													>Level {sheet.level}</span
 												>{/if}
 										</p>
 									</div>
-									<Swords class="h-5 w-5 shrink-0 text-amber-400/70" />
+									<Swords class="h-5 w-5 shrink-0 text-ink-400" />
 								</div>
 
 								<div class="mt-5 flex items-center gap-2">
 									<button
 										onclick={() => openSaved(name)}
-										class="inline-flex flex-1 items-center justify-center gap-2 rounded-lg bg-amber-400/90 px-3 py-2 text-sm font-semibold text-stone-950 transition hover:bg-amber-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+										class="btn-leather inline-flex flex-1 items-center justify-center gap-2 rounded-md px-3 py-2 text-sm font-semibold"
 									>
 										<Pencil class="h-4 w-4" />
 										Edit
@@ -139,7 +163,7 @@
 										onclick={() => deleteSave(name)}
 										title="Delete character"
 										aria-label="Delete character"
-										class="inline-flex items-center justify-center rounded-lg border border-white/10 bg-white/5 p-2 text-stone-400 transition hover:border-red-400/40 hover:bg-red-500/10 hover:text-red-300 focus:outline-none focus-visible:ring-2 focus-visible:ring-red-300"
+										class="btn-iron inline-flex items-center justify-center rounded-md p-2"
 									>
 										<Trash2 class="h-4 w-4" />
 									</button>
@@ -149,10 +173,10 @@
 					{/each}
 				</ul>
 
-				<div class="mt-6 text-center">
+				<div class="mt-8 text-center">
 					<button
 						onclick={startNew}
-						class="inline-flex items-center gap-2 rounded-lg px-4 py-2 text-sm font-medium text-amber-300 transition hover:text-amber-200 focus:outline-none focus-visible:ring-2 focus-visible:ring-amber-300"
+						class="inline-flex items-center gap-2 rounded-sm px-3 py-2 text-sm font-semibold text-ink-600 underline decoration-ink-400/60 decoration-dotted underline-offset-4 transition hover:text-ink-900 hover:decoration-ink-700"
 					>
 						<Plus class="h-4 w-4" />
 						Add another character
@@ -162,16 +186,10 @@
 			{/if}
 		</section>
 
-		<footer class="mt-16 text-center text-xs text-stone-600">
+		<footer
+			class="mt-14 border-t border-ink-400/30 pt-5 text-center text-xs tracking-wide text-ink-500 italic"
+		>
 			Everything is stored locally in your browser — no account, no servers.
 		</footer>
 	</div>
 </main>
-
-<style>
-	main {
-		background:
-			radial-gradient(48rem 28rem at 50% -10%, rgba(217, 119, 6, 0.08), transparent 60%),
-			transparent;
-	}
-</style>

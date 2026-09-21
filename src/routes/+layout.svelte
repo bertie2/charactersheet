@@ -26,8 +26,8 @@
 </script>
 
 <svelte:head><link rel="icon" href={favicon} /></svelte:head>
-<div class="app-shell min-h-dvh bg-stone-950 text-stone-100">
-	<!-- ambient background glows -->
+<div class="app-shell min-h-dvh text-parchment-100">
+	<!-- ambient candlelight and vignette over the oak desk -->
 	<div class="app-glow" aria-hidden="true"></div>
 	{@render children()}
 </div>

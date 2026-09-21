@@ -160,3 +160,191 @@ test('imports a legacy plain-JSON file (backward compatible)', async ({ page }) 
 	await expect(page.getByTestId('name')).toHaveValue('Legacy Hero');
 	await expect(page.getByTestId('background')).toHaveValue('Hermit');
 });
+
+test('ticks expended spell slots on the printed tally', async ({ page }) => {
+	/** The persisted spell slots, straight out of localStorage. */
+	const slots = () =>
+		page.evaluate(
+			() =>
+				(
+					JSON.parse(localStorage.getItem('characterSheet') ?? '{}') as {
+						spellSlots?: { level: number; current: number; max: number }[];
+					}
+				).spellSlots ?? []
+		);
+
+	const tick1 = page.getByTestId('spellSlotTick-1-1');
+	const tick3 = page.getByTestId('spellSlotTick-1-3');
+
+	await expect(tick1).toBeVisible();
+	await expect(tick1).not.toBeChecked();
+
+	// Ticking the third box records three expended 1st-level slots. The total was
+	// empty, so it is raised to match rather than silently losing the tick.
+	await tick3.click();
+	await expect(tick1).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	await expect(tick3).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-4')).not.toBeChecked();
+	expect(await slots()).toContainEqual({ level: 1, max: 3, current: 0 });
+
+	// Clicking the last ticked box again clears it back to two.
+	await tick3.click();
+	await expect(tick3).not.toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	expect(await slots()).toContainEqual({ level: 1, max: 3, current: 1 });
+
+	// The tally is persisted, so a reload keeps it.
+	await page.reload();
+	await expect(page.getByTestId('spellSlotTick-1-2')).toBeChecked();
+	await expect(page.getByTestId('spellSlotTick-1-3')).not.toBeChecked();
+
+	// A higher level keeps its own tally.
+	await page.getByTestId('spellSlotTick-5-2').click();
+	await expect(page.getByTestId('spellSlotTick-5-1')).toBeChecked();
+	expect(await slots()).toContainEqual({ level: 5, max: 2, current: 0 });
+	// ...and the level below it is untouched.
+	expect(await slots()).toContainEqual({ level: 4, max: 0, current: 0 });
+
+	// The artwork prints fewer boxes at higher levels: 3 at 5th, 2 at 6th, 1 at 8th.
+	await expect(page.getByTestId('spellSlotTick-5-3')).toBeVisible();
+	await expect(page.getByTestId('spellSlotTick-6-3')).toHaveCount(0);
+	await expect(page.getByTestId('spellSlotTick-8-1')).toBeVisible();
+	await expect(page.getByTestId('spellSlotTick-8-2')).toHaveCount(0);
+	await expect(page.getByTestId('spellSlotTick-9-2')).toHaveCount(0);
+});
+
+test('pre-populates every printed row and offers no add/remove buttons', async ({ page }) => {
+	// The last printed row of each list is on the sheet from the start.
+	await expect(page.getByTestId('weapon-6-name')).toBeVisible();
+	await expect(page.getByTestId('weapon-6-name')).toHaveValue('');
+	await expect(page.getByTestId('spell-30-name')).toBeVisible();
+	await expect(page.getByTestId('spell-30-name')).toHaveValue('');
+	await expect(page.getByTestId('magicItem-3-name')).toBeVisible();
+	await expect(page.getByTestId('magicItem-3-attuned')).toBeVisible();
+
+	// Nothing beyond them, and nothing to add or remove any more.
+	await expect(page.getByTestId('weapon-7-name')).toHaveCount(0);
+	await expect(page.getByTestId('spell-31-name')).toHaveCount(0);
+	await expect(page.getByTestId('magicItem-4-name')).toHaveCount(0);
+	for (const title of [
+		'Add weapon',
+		'Remove weapon',
+		'Add spell',
+		'Remove spell',
+		'Add magic item',
+		'Remove magic item'
+	]) {
+		await expect(page.locator(`button[title="${title}"]`)).toHaveCount(0);
+	}
+
+	// The rows are real fields: values typed into the last row persist.
+	await page.getByTestId('spell-30-name').fill('Wish');
+	await page.getByTestId('magicItem-3-name').fill('Cloak of Invisibility');
+	await page.reload();
+	await expect(page.getByTestId('spell-30-name')).toHaveValue('Wish');
+	await expect(page.getByTestId('magicItem-3-name')).toHaveValue('Cloak of Invisibility');
+});
+
+/** A character as the older app stored one: no pre-filled row lists at all. */
+function legacySheet() {
+	const sheet = createEmptyCharacterSheet();
+	sheet.name = 'Legacy Hero';
+	sheet.class = 'Ranger';
+	sheet.weaponsAndCantrips = [
+		{ name: 'Longbow', bonus: '+9', damage: '1d8+5', notes: 'Range 150' }
+	];
+	sheet.spells = [
+		{
+			level: 1,
+			name: 'Hunters Mark',
+			castingTime: '1 bonus action',
+			range: '90 ft',
+			concentration: true,
+			ritual: false,
+			material: false,
+			notes: ''
+		}
+	];
+	sheet.magicItems = [];
+	return sheet;
+}
+
+test('pads the row lists when loading a character saved before they were pre-populated', async ({
+	page
+}) => {
+	// Park a legacy sheet in localStorage and reload into it.
+	await page.evaluate((legacy) => {
+		const next = { ...legacy };
+		localStorage.setItem('characterSheet', JSON.stringify(next));
+	}, legacySheet());
+	await page.reload();
+	await page.waitForTimeout(200);
+
+	// The stored values are untouched...
+	await expect(page.getByTestId('name')).toHaveValue('Legacy Hero');
+	await expect(page.getByTestId('weapon-1-name')).toHaveValue('Longbow');
+	await expect(page.getByTestId('spell-1-name')).toHaveValue('Hunters Mark');
+	await expect(page.getByTestId('spell-1-level')).toHaveValue('1');
+
+	// ...and every printed row is now on the sheet.
+	await expect(page.getByTestId('weapon-6-name')).toBeVisible();
+	await expect(page.getByTestId('spell-30-name')).toBeVisible();
+	await expect(page.getByTestId('magicItem-3-name')).toBeVisible();
+
+	// Edits land on the padded rows and stick.
+	await page.getByTestId('weapon-6-name').fill('Dagger');
+	await page.reload();
+	await expect(page.getByTestId('weapon-6-name')).toHaveValue('Dagger');
+});
+
+test('pads the row lists when loading a legacy character from the dropdown', async ({ page }) => {
+	// Store a legacy save the way the old app would have, then reload so the
+	// saves store picks it up.
+	await page.getByTestId('name').fill('Old Save');
+	await settle(page);
+	await saveBtn(page).click();
+	await page.waitForTimeout(200);
+	await page.evaluate(() => {
+		const saves = JSON.parse(localStorage.getItem('saves') ?? '{}');
+		delete saves['Old Save'].spells;
+		delete saves['Old Save'].magicItems;
+		delete saves['Old Save'].weaponsAndCantrips;
+		localStorage.setItem('saves', JSON.stringify(saves));
+	});
+	await page.reload();
+	await page.waitForTimeout(200);
+
+	await loadBtn(page).click();
+	const row = page.locator('.group', { hasText: 'Old Save' });
+	await expect(row).toBeVisible();
+	await row.locator('button').first().click();
+
+	await expect(page.getByTestId('name')).toHaveValue('Old Save');
+	await expect(page.getByTestId('spell-30-name')).toBeVisible();
+	await expect(page.getByTestId('spell-30-name')).toHaveValue('');
+	await expect(page.getByTestId('weapon-6-name')).toBeVisible();
+	await expect(page.getByTestId('magicItem-3-name')).toBeVisible();
+});
+
+test('pads the row lists when importing a file written by an older version', async ({ page }) => {
+	// Same legacy shape, but as a plain-JSON export from the old app.
+	const legacy = legacySheet() as unknown as Record<string, unknown>;
+	delete legacy.spells;
+	delete legacy.magicItems;
+	delete legacy.weaponsAndCantrips;
+	const tmpFile = path.join(os.tmpdir(), 'legacy-rows.json');
+	await fs.writeFile(tmpFile, JSON.stringify(legacy));
+
+	await settle(page);
+	const fileChooserPromise = page.waitForEvent('filechooser');
+	await importBtn(page).click();
+	const fileChooser = await fileChooserPromise;
+	await fileChooser.setFiles(tmpFile);
+
+	await expect(page.getByTestId('name')).toHaveValue('Legacy Hero');
+	await expect(page.getByTestId('class')).toHaveValue('Ranger');
+	await expect(page.getByTestId('weapon-6-name')).toBeVisible();
+	await expect(page.getByTestId('spell-30-name')).toBeVisible();
+	await expect(page.getByTestId('magicItem-3-name')).toBeVisible();
+});
