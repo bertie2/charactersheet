@@ -89,12 +89,14 @@
 	 * crisp instead of being stretched. The tile stacks three sideways-shifted
 	 * bands and is taller than most viewports, so stacking it vertically never
 	 * repeats a knot or a grain line directly above itself.
+	 *
+	 * One tile serves every face, buttons included: upscaling it for small faces
+	 * only multiplied the pixels the browser has to raster (and softened the
+	 * grain) without changing how the wood reads.
 	 * Keep --wood-tile in sync with the script's W/PH/PLANKS/BANDS constants.
 	 */
 	--tex-wood: url('/wood.svg');
 	--wood-tile: 768px 1440px;
-	/* a coarser cut of the same board for small faces (published by the script) */
-	--wood-tile-btn: 1152px 2160px;
 
 	/*
 	 * In-sheet values are sized from the artwork's design grid (see
@@ -187,10 +189,22 @@ select {
 	transition-timing-function: ease-out;
 }
 
-/* The pan/zoom surface disables text selection, but fields must stay editable */
+/*
+ * The pan/zoom surface disables text selection so a swipe pans. Fields opt back
+ * in only once they have focus: an unfocused field that allowed selection
+ * turned a swipe into a text-selection drag, which the browser takes over (and
+ * cancels the pointer stream with it) — and most of the sheet is fields.
+ */
 .panzoom-root :is(input, textarea) {
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-user-drag: none;
+}
+.panzoom-root :is(input, textarea):focus {
 	user-select: text;
 	-webkit-user-select: text;
+	-webkit-touch-callout: default;
 }
 
 /* ------------------------------------------------------------------ *
@@ -320,7 +334,7 @@ select {
 		background-image: var(--tex-wood);
 		background-repeat: repeat;
 		background-position: 0 -9px;
-		background-size: var(--wood-tile-btn);
+		background-size: var(--wood-tile);
 		box-shadow:
 			/* the dark seam where the board sits recessed inside its rim */
 			inset 0 0 0 1px rgba(20, 11, 3, 0.6),

@@ -17,15 +17,18 @@
  *   4. a dense pinstripe of hairline grain (one <path>, many subpaths — cheap)
  *   5. a per-plank sheen (lighter at the top edge, darker at the bottom) plus the
  *      seam: a dark groove, a 1px bevel highlight and a soft shade band
- *   6. a stitched noise filter for tooth; because the filter region is exactly
- *      one tile and `stitchTiles="stitch"`, the noise is seam-free too
+ *   6. a stitched noise filter for tooth, rastered into a NOISE x NOISE tile and
+ *      repeated by a <pattern>. `stitchTiles="stitch"` makes that small tile
+ *      seam-free, so the filter only ever touches NOISE² pixels instead of the
+ *      whole board — turbulence is by far the most expensive thing in the file
+ *      and this keeps it ~16x cheaper at every device pixel ratio.
  *
  * The tile stacks BANDS lots of PLANKS boards. Every board is generated from
  * scratch and every band is slid sideways before it is drawn, so stacking the
  * tile vertically never lines a knot or a grain line up with the one above it —
  * which is what makes a small repeating tile look like wallpaper.
  *
- * The tile is designed to be painted 1:1 (`background-size: 768px 1080px`) so the
+ * The tile is designed to be painted 1:1 (`background-size: 768px 1440px`) so the
  * grain stays crisp; each board is 72px and the tile is taller than most
  * viewports, so the vertical wrap point is rarely on screen at all.
  */
@@ -42,6 +45,7 @@ const PH = 72; // plank height
 const PLANKS = 5; // boards per band
 const BANDS = 4; // independently generated, sideways-shifted bands per tile
 const H = PH * PLANKS * BANDS; // tile height == a whole number of boards
+const NOISE = 256; // size of the repeated tooth tile (the only rastered filter)
 
 /* ------------------------------------------------------------------ *
  * Deterministic randomness
@@ -135,9 +139,11 @@ defs.push(
 		`<stop offset="0" stop-color="#ffd79a" stop-opacity="0.07"/>` +
 		`<stop offset="0.45" stop-color="#ffd79a" stop-opacity="0"/>` +
 		`<stop offset="1" stop-color="#000000" stop-opacity="0.15"/></linearGradient>`,
-	`<filter id="tooth" x="0" y="0" width="${W}" height="${H}" filterUnits="userSpaceOnUse">` +
+	`<filter id="tooth" x="0" y="0" width="${NOISE}" height="${NOISE}" filterUnits="userSpaceOnUse">` +
 		`<feTurbulence type="fractalNoise" baseFrequency="0.6" numOctaves="3" stitchTiles="stitch"/>` +
-		`<feColorMatrix type="saturate" values="0"/></filter>`
+		`<feColorMatrix type="saturate" values="0"/></filter>`,
+	`<pattern id="toothTile" width="${NOISE}" height="${NOISE}" patternUnits="userSpaceOnUse">` +
+		`<rect width="${NOISE}" height="${NOISE}" filter="url(#tooth)"/></pattern>`
 );
 
 for (let band = 0; band < BANDS; band++) {
@@ -297,9 +303,9 @@ for (let band = 0; band < BANDS; band++) {
 	}
 }
 
-// 7. tooth
+// 7. tooth — a small stitched noise tile, repeated
 parts.push(
-	`<rect width="${W}" height="${H}" filter="url(#tooth)" opacity="0.2" style="mix-blend-mode:soft-light"/>`
+	`<rect width="${W}" height="${H}" fill="url(#toothTile)" opacity="0.2" style="mix-blend-mode:soft-light"/>`
 );
 
 const svg =
@@ -316,15 +322,12 @@ writeFileSync(out, svg);
 /*
  * The CSS paints the tile at exactly these pixel dimensions, so the tokens and
  * the geometry have to agree or the grain gets squashed. Publish them here
- * instead of trusting a human to remember. Buttons use a coarser cut of the same
- * tile (`--wood-tile-btn`) so the grain still reads on a 36px face.
+ * instead of trusting a human to remember.
  */
-const BTN_SCALE = 1.5;
 const cssPath = resolve(here, '../src/routes/layout.css');
 let css = readFileSync(cssPath, 'utf8');
 const tokens = {
-	'--wood-tile': `${W}px ${H}px`,
-	'--wood-tile-btn': `${n(W * BTN_SCALE)}px ${n(H * BTN_SCALE)}px`
+	'--wood-tile': `${W}px ${H}px`
 };
 for (const [name, value] of Object.entries(tokens)) {
 	const pattern = new RegExp(`(${name}:\\s*)[^;]+;`);

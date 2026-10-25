@@ -14,6 +14,9 @@
 
 	// Zoom is owned by <PanZoom> (bound via `bind:scale`). Sheets are re-rendered
 	// at baseSize * zoom so zoom is a true DOM/layout rescale — text stays crisp.
+	// PanZoom only commits that scale when a gesture ends, and previews the
+	// magnification with a transform in between, so pinching doesn't re-lay this
+	// component out on every pointer event.
 	let zoom = $state(1);
 	let sheetWidth = $state(700);
 	let sheetHeight = $state(900);
@@ -51,10 +54,18 @@
 
 	<div class="flex-1 overflow-hidden">
 		<PanZoom bind:scale={zoom}>
+			<!--
+				Padding and gap scale with zoom, like everything else inside the
+				canvas: PanZoom previews a gesture with a transform, so any fixed
+				length in here would snap back to its unzoomed size when the scale
+				is committed. They also keep the content's size proportional to
+				`zoom`, which is what PanZoom measures its base size from.
+			-->
 			<div
-				class="flex w-max flex-col items-center gap-6 p-5 {$viewport.isMobile
+				class="flex w-max flex-col items-center {$viewport.isMobile
 					? 'flex-col'
 					: 'md:flex-row md:items-start'}"
+				style="padding: {PAD * zoom}px; gap: {GAP * zoom}px;"
 			>
 				<Page1 {characterSheet} {sheetWidth} {sheetHeight} />
 				<Page2 {characterSheet} {sheetWidth} {sheetHeight} />
