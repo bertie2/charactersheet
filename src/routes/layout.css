@@ -189,10 +189,22 @@ select {
 	transition-timing-function: ease-out;
 }
 
-/* The pan/zoom surface disables text selection, but fields must stay editable */
+/*
+ * The pan/zoom surface disables text selection so a swipe pans. Fields opt back
+ * in only once they have focus: an unfocused field that allowed selection
+ * turned a swipe into a text-selection drag, which the browser takes over (and
+ * cancels the pointer stream with it) — and most of the sheet is fields.
+ */
 .panzoom-root :is(input, textarea) {
+	user-select: none;
+	-webkit-user-select: none;
+	-webkit-touch-callout: none;
+	-webkit-user-drag: none;
+}
+.panzoom-root :is(input, textarea):focus {
 	user-select: text;
 	-webkit-user-select: text;
+	-webkit-touch-callout: default;
 }
 
 /* ------------------------------------------------------------------ *

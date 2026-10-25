@@ -14,7 +14,9 @@
 		<div
 			data-testid="sheet"
 			style="height: {BASE_H * scale}px; width: {BASE_W * scale}px; position: relative;"
-		></div>
+		>
+			<input data-testid="field" style="position: absolute; top: 40px; left: 40px;" />
+		</div>
 	</PanZoom>
 </div>
 <p data-testid="scale">{scale}</p>

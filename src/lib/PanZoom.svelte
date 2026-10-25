@@ -27,12 +27,24 @@
 	 */
 	let preview = $state(1);
 	const effScale = $derived(scale * preview);
-	const contentTransform = $derived(
-		`translate(${tx}px, ${ty}px)${preview === 1 ? '' : ` scale(${preview})`}`
-	);
 
 	let viewportEl = $state<HTMLDivElement | undefined>(undefined);
 	let contentEl = $state<HTMLDivElement | undefined>(undefined);
+
+	/*
+	 * The transform is written straight to the element instead of through a
+	 * binding: an interpolated `style` attribute replaces the whole attribute,
+	 * which makes Blink invalidate the element's subtree on every pan frame,
+	 * whereas writing the property keeps the invalidation narrow.
+	 */
+	$effect(() => {
+		const el = contentEl;
+		if (!el) return;
+		el.style.transform =
+			preview === 1
+				? `translate(${tx}px, ${ty}px)`
+				: `translate(${tx}px, ${ty}px) scale(${preview})`;
+	});
 
 	// Pointer tracking
 	const touchPoints = new Map<number, { x: number; y: number }>();
@@ -117,7 +129,7 @@
 	 * scale * preview is the same magnification the transform was showing.
 	 */
 	function commitZoom() {
-		clearTimeout(commitTimer);
+		cancelPendingCommit();
 		if (preview === 1) return;
 		const next = clamp(scale * preview, minScaleNow(), MAX_SCALE);
 		preview = 1;
@@ -129,6 +141,16 @@
 	function scheduleCommit() {
 		clearTimeout(commitTimer);
 		commitTimer = setTimeout(commitZoom, COMMIT_DELAY);
+	}
+
+	/**
+	 * A wheel gesture that has not been committed yet must not land in the middle
+	 * of the next one: the re-layout it triggers is exactly the cost the preview
+	 * exists to avoid.
+	 */
+	function cancelPendingCommit() {
+		clearTimeout(commitTimer);
+		commitTimer = undefined;
 	}
 
 	function onWheel(e: WheelEvent) {
@@ -144,6 +166,7 @@
 	}
 
 	function beginPanCandidate(x: number, y: number) {
+		cancelPendingCommit();
 		panCandidate = true;
 		panning = false;
 		panStartX = lastX = pendingX = x;
@@ -153,6 +176,7 @@
 	function beginPinch() {
 		const pts = [...touchPoints.values()];
 		if (pts.length < 2) return;
+		cancelPendingCommit();
 		pinchStartDist = Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y));
 		pinchStartScale = effScale;
 		pinchMidX = (pts[0].x + pts[1].x) / 2;
@@ -177,6 +201,7 @@
 			// Middle mouse drag to pan
 			e.preventDefault();
 			dismissHint();
+			cancelPendingCommit();
 			panning = true;
 			panCandidate = false;
 			lastX = pendingX = e.clientX;
@@ -217,9 +242,14 @@
 		if (moveFrame) return;
 		moveFrame = requestAnimationFrame(() => {
 			moveFrame = 0;
-			if (touchPoints.size >= 2 && pinching) applyPinch();
-			else if (panning || panCandidate) applyPan();
+			flushMove();
 		});
+	}
+
+	/** The one place that decides what a pending move should do. */
+	function flushMove() {
+		if (touchPoints.size >= 2 && pinching) applyPinch();
+		else if (panning || panCandidate) applyPan();
 	}
 
 	function applyPinch() {
@@ -258,8 +288,7 @@
 			cancelAnimationFrame(moveFrame);
 			moveFrame = 0;
 			// Apply the last coalesced position so a drag doesn't end a few pixels short.
-			if (touchPoints.size >= 2 && pinching) applyPinch();
-			else if (panning || panCandidate) applyPan();
+			flushMove();
 		}
 		if (e.pointerType === 'touch') {
 			touchPoints.delete(e.pointerId);
@@ -306,7 +335,7 @@
 	}
 	function resetView() {
 		dismissHint();
-		clearTimeout(commitTimer);
+		cancelPendingCommit();
 		preview = 1;
 		scale = 1;
 		tx = 0;
@@ -356,11 +385,7 @@
 	class="panzoom-root relative h-full w-full overflow-hidden"
 	style="touch-action: none; cursor: {panning ? 'grabbing' : 'default'};"
 >
-	<div
-		bind:this={contentEl}
-		class="absolute top-0 left-0"
-		style="transform: {contentTransform}; transform-origin: 0 0;"
-	>
+	<div bind:this={contentEl} class="absolute top-0 left-0" style="transform-origin: 0 0;">
 		<!-- The sheets are laid out at baseSize * committed `scale`, so text and
 		     fields stay crisp. A gesture only previews its magnification with the
 		     transform above and commits the new layout size when it ends. -->
