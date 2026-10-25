@@ -7,6 +7,7 @@
 
 	const MAX_SCALE = 4;
 	const PAN_THRESHOLD = 8; // px of movement before a touch becomes a drag
+	const COMMIT_DELAY = 160; // ms of wheel silence before the zoom is committed
 
 	let tx = $state(0);
 	let ty = $state(0);
@@ -15,6 +16,20 @@
 	// Content size at scale = 1 (normalized, so it stays constant as we zoom)
 	let baseW = $state(0);
 	let baseH = $state(0);
+
+	/*
+	 * `scale` is the committed layout zoom: the sheets are re-rendered at
+	 * baseSize * scale, which is expensive (a few hundred container-query fields
+	 * re-resolve), so it must not change per pointer event. `preview` carries the
+	 * magnification a gesture has reached so far and is applied as a transform,
+	 * which costs the compositor nothing. `commitZoom()` folds it back into
+	 * `scale` once the gesture ends.
+	 */
+	let preview = $state(1);
+	const effScale = $derived(scale * preview);
+	const contentTransform = $derived(
+		`translate(${tx}px, ${ty}px)${preview === 1 ? '' : ` scale(${preview})`}`
+	);
 
 	let viewportEl = $state<HTMLDivElement | undefined>(undefined);
 	let contentEl = $state<HTMLDivElement | undefined>(undefined);
@@ -35,12 +50,23 @@
 	let pinchStartTx = 0;
 	let pinchStartTy = 0;
 
+	// Moves are coalesced onto the next frame: pointers report far faster than
+	// frames, and every uncoalesced move would otherwise reach the renderer.
+	let moveFrame = 0;
+	let pendingX = 0;
+	let pendingY = 0;
+	let commitTimer: ReturnType<typeof setTimeout> | undefined;
+
 	let showHint = $state(true);
 	let hintTimer: ReturnType<typeof setTimeout> | undefined;
 
 	onMount(() => {
 		hintTimer = setTimeout(() => (showHint = false), 5000);
-		return () => clearTimeout(hintTimer);
+		return () => {
+			clearTimeout(hintTimer);
+			clearTimeout(commitTimer);
+			if (moveFrame) cancelAnimationFrame(moveFrame);
+		};
 	});
 
 	function clamp(v: number, lo: number, hi: number) {
@@ -56,8 +82,8 @@
 	/** Keep the content in view, centering it whenever it is smaller than the viewport. */
 	function clampT() {
 		if (!vw || !vh || !baseW || !baseH) return;
-		const cw = baseW * scale;
-		const ch = baseH * scale;
+		const cw = baseW * effScale;
+		const ch = baseH * effScale;
 		let minX = vw - cw;
 		let maxX = 0;
 		if (cw <= vw) minX = maxX = (vw - cw) / 2;
@@ -69,19 +95,40 @@
 	}
 
 	/**
-	 * Zoom is a true DOM/layout zoom (CSS `zoom`), so the content is re-rendered
-	 * at the new size. We keep the content point under the cursor fixed while the
-	 * layout size changes.
+	 * Zoom to `nextScale`, keeping the content point under (px, py) fixed. The
+	 * magnification is only previewed — the caller decides when to commit it.
 	 */
 	function zoomAt(px: number, py: number, nextScale: number) {
+		if (!baseW || !baseH) return;
 		nextScale = clamp(nextScale, minScaleNow(), MAX_SCALE);
-		if (Math.abs(nextScale - scale) < 0.0001) return;
-		const fx = (px - tx) / (baseW * scale); // fraction along content width
-		const fy = (py - ty) / (baseH * scale); // fraction along content height
+		if (Math.abs(nextScale - effScale) < 0.0001) return;
+		const fx = (px - tx) / (baseW * effScale); // fraction along content width
+		const fy = (py - ty) / (baseH * effScale); // fraction along content height
 		tx = px - fx * baseW * nextScale;
 		ty = py - fy * baseH * nextScale;
-		scale = nextScale;
+		preview = nextScale / scale;
 		clampT();
+	}
+
+	/**
+	 * Fold the gesture preview into the real layout zoom. This is the only place
+	 * that resizes the sheets, so a whole gesture costs one re-layout instead of
+	 * one per pointer event. Geometry is unchanged by the switch, because
+	 * scale * preview is the same magnification the transform was showing.
+	 */
+	function commitZoom() {
+		clearTimeout(commitTimer);
+		if (preview === 1) return;
+		const next = clamp(scale * preview, minScaleNow(), MAX_SCALE);
+		preview = 1;
+		if (Math.abs(next - scale) > 0.0001) scale = next;
+		clampT();
+	}
+
+	/** Wheel bursts arrive continuously; commit once the user stops wheeling. */
+	function scheduleCommit() {
+		clearTimeout(commitTimer);
+		commitTimer = setTimeout(commitZoom, COMMIT_DELAY);
 	}
 
 	function onWheel(e: WheelEvent) {
@@ -92,21 +139,22 @@
 		const px = e.clientX - rect.left;
 		const py = e.clientY - rect.top;
 		const factor = Math.exp(-e.deltaY * 0.0016);
-		zoomAt(px, py, scale * factor);
+		zoomAt(px, py, effScale * factor);
+		scheduleCommit();
 	}
 
 	function beginPanCandidate(x: number, y: number) {
 		panCandidate = true;
 		panning = false;
-		panStartX = lastX = x;
-		panStartY = lastY = y;
+		panStartX = lastX = pendingX = x;
+		panStartY = lastY = pendingY = y;
 	}
 
 	function beginPinch() {
 		const pts = [...touchPoints.values()];
 		if (pts.length < 2) return;
 		pinchStartDist = Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y));
-		pinchStartScale = scale;
+		pinchStartScale = effScale;
 		pinchMidX = (pts[0].x + pts[1].x) / 2;
 		pinchMidY = (pts[0].y + pts[1].y) / 2;
 		pinchStartTx = tx;
@@ -131,8 +179,8 @@
 			dismissHint();
 			panning = true;
 			panCandidate = false;
-			lastX = e.clientX;
-			lastY = e.clientY;
+			lastX = pendingX = e.clientX;
+			lastY = pendingY = e.clientY;
 			try {
 				viewportEl?.setPointerCapture(e.pointerId);
 			} catch {
@@ -147,51 +195,85 @@
 				touchPoints.set(e.pointerId, { x: e.clientX, y: e.clientY });
 			}
 			if (touchPoints.size >= 2 && pinching) {
-				const pts = [...touchPoints.values()];
-				if (pts.length < 2) return;
-				const dist = Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y));
-				const midX = (pts[0].x + pts[1].x) / 2;
-				const midY = (pts[0].y + pts[1].y) / 2;
-				const next = clamp(pinchStartScale * (dist / pinchStartDist), minScaleNow(), MAX_SCALE);
-				const fx = (pinchMidX - pinchStartTx) / (baseW * pinchStartScale);
-				const fy = (pinchMidY - pinchStartTy) / (baseH * pinchStartScale);
-				tx = midX - fx * baseW * next;
-				ty = midY - fy * baseH * next;
-				scale = next;
-				clampT();
+				queueMove();
 			} else if (panCandidate || panning) {
-				const dx = e.clientX - lastX;
-				const dy = e.clientY - lastY;
-				if (!panning && Math.hypot(e.clientX - panStartX, e.clientY - panStartY) > PAN_THRESHOLD) {
-					panning = true;
-				}
-				if (panning) {
-					tx += dx;
-					ty += dy;
-					clampT();
-				}
-				lastX = e.clientX;
-				lastY = e.clientY;
+				pendingX = e.clientX;
+				pendingY = e.clientY;
+				queueMove();
 			}
 		} else if (e.pointerType === 'mouse' && panning) {
-			tx += e.clientX - lastX;
-			ty += e.clientY - lastY;
-			lastX = e.clientX;
-			lastY = e.clientY;
-			clampT();
+			pendingX = e.clientX;
+			pendingY = e.clientY;
+			queueMove();
 		}
 	}
 
+	/**
+	 * Apply at most one gesture update per frame, from the newest pointer data.
+	 * Pointers report faster than frames (up to 240 Hz), and each update costs a
+	 * transform plus, at commit time, a real re-layout.
+	 */
+	function queueMove() {
+		if (moveFrame) return;
+		moveFrame = requestAnimationFrame(() => {
+			moveFrame = 0;
+			if (touchPoints.size >= 2 && pinching) applyPinch();
+			else if (panning || panCandidate) applyPan();
+		});
+	}
+
+	function applyPinch() {
+		if (!baseW || !baseH) return;
+		const pts = [...touchPoints.values()];
+		if (pts.length < 2) return;
+		const dist = Math.max(1, Math.hypot(pts[0].x - pts[1].x, pts[0].y - pts[1].y));
+		const midX = (pts[0].x + pts[1].x) / 2;
+		const midY = (pts[0].y + pts[1].y) / 2;
+		const next = clamp(pinchStartScale * (dist / pinchStartDist), minScaleNow(), MAX_SCALE);
+		const fx = (pinchMidX - pinchStartTx) / (baseW * pinchStartScale);
+		const fy = (pinchMidY - pinchStartTy) / (baseH * pinchStartScale);
+		tx = midX - fx * baseW * next;
+		ty = midY - fy * baseH * next;
+		preview = next / scale;
+		clampT();
+	}
+
+	function applyPan() {
+		const dx = pendingX - lastX;
+		const dy = pendingY - lastY;
+		if (!panning && Math.hypot(pendingX - panStartX, pendingY - panStartY) > PAN_THRESHOLD) {
+			panning = true;
+		}
+		if (panning) {
+			tx += dx;
+			ty += dy;
+			clampT();
+		}
+		lastX = pendingX;
+		lastY = pendingY;
+	}
+
 	function onPointerUp(e: PointerEvent) {
+		if (moveFrame) {
+			cancelAnimationFrame(moveFrame);
+			moveFrame = 0;
+			// Apply the last coalesced position so a drag doesn't end a few pixels short.
+			if (touchPoints.size >= 2 && pinching) applyPinch();
+			else if (panning || panCandidate) applyPan();
+		}
 		if (e.pointerType === 'touch') {
 			touchPoints.delete(e.pointerId);
-			if (pinching && touchPoints.size < 2) pinching = false;
+			if (pinching && touchPoints.size < 2) {
+				pinching = false;
+				commitZoom();
+			}
 			if (touchPoints.size === 1) {
 				const remaining = [...touchPoints.values()][0];
 				beginPanCandidate(remaining.x, remaining.y);
 			} else if (touchPoints.size === 0) {
 				panning = false;
 				panCandidate = false;
+				commitZoom();
 			}
 		} else if (e.pointerType === 'mouse' && panning) {
 			panning = false;
@@ -214,14 +296,18 @@
 
 	function zoomIn() {
 		dismissHint();
-		zoomAt(vw / 2, vh / 2, scale * 1.3);
+		zoomAt(vw / 2, vh / 2, effScale * 1.3);
+		commitZoom();
 	}
 	function zoomOut() {
 		dismissHint();
-		zoomAt(vw / 2, vh / 2, scale / 1.3);
+		zoomAt(vw / 2, vh / 2, effScale / 1.3);
+		commitZoom();
 	}
 	function resetView() {
 		dismissHint();
+		clearTimeout(commitTimer);
+		preview = 1;
 		scale = 1;
 		tx = 0;
 		ty = 0;
@@ -273,11 +359,11 @@
 	<div
 		bind:this={contentEl}
 		class="absolute top-0 left-0"
-		style="transform: translate({tx}px, {ty}px); transform-origin: 0 0;"
+		style="transform: {contentTransform}; transform-origin: 0 0;"
 	>
-		<!-- Zoom is driven by the parent re-rendering the sheets at a larger layout
-		     size (scale is a $bindable), so text/elements are re-laid out and stay
-		     crisp — no transform scale of a composited layer. -->
+		<!-- The sheets are laid out at baseSize * committed `scale`, so text and
+		     fields stay crisp. A gesture only previews its magnification with the
+		     transform above and commits the new layout size when it ends. -->
 		{@render children()}
 	</div>
 
@@ -289,7 +375,7 @@
 			<ZoomOut class="h-4 w-4" />
 		</button>
 		<span class="min-w-11 px-1 text-center text-xs font-semibold text-parchment-200 tabular-nums"
-			>{Math.round(scale * 100)}%</span
+			>{Math.round(effScale * 100)}%</span
 		>
 		<button onclick={zoomIn} title="Zoom in" aria-label="Zoom in" class="zoom-btn btn-leather">
 			<ZoomIn class="h-4 w-4" />
